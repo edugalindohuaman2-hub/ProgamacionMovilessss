@@ -1,145 +1,205 @@
 package com.tecsup.mibodega.ui.cliente
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.navigation.NavType
+import androidx.compose.animation.*
+import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.tecsup.mibodega.ui.cliente.modelo.ItemCarrito
-import com.tecsup.mibodega.ui.cliente.modelo.Producto
-import com.tecsup.mibodega.ui.cliente.modelo.listaProductosFake
+import com.tecsup.mibodega.ui.cliente.modelo.*
 import com.tecsup.mibodega.ui.cliente.screens.bienvenida.BienvenidaScreen
 import com.tecsup.mibodega.ui.cliente.screens.carrito.CarritoScreen
-import com.tecsup.mibodega.ui.cliente.screens.detalle.DetalleProductoScreen
+import com.tecsup.mibodega.ui.cliente.screens.categorias.CategoriasScreen
+import com.tecsup.mibodega.ui.cliente.screens.confirmacion.ConfirmacionScreen
+import com.tecsup.mibodega.ui.cliente.screens.entrega.DatosEntregaScreen
+import com.tecsup.mibodega.ui.cliente.screens.favoritos.FavoritosScreen
 import com.tecsup.mibodega.ui.cliente.screens.inicio.InicioScreen
+import com.tecsup.mibodega.ui.cliente.screens.login.LoginScreen
+import com.tecsup.mibodega.ui.cliente.screens.pedidos.PedidosScreen
+import com.tecsup.mibodega.ui.cliente.screens.perfil.PerfilScreen
 import com.tecsup.mibodega.ui.cliente.screens.registro.RegistroScreen
-
-/**
- * "Director de orquesta" de la app cliente:
- * - Tiene el NavHost con las rutas de cada pantalla.
- * - Tiene el estado del carrito (List<ItemCarrito>), que se reparte
- *   hacia abajo a Inicio, Detalle, Carrito y Entrega.
- * Ninguna Screen navega sola ni modifica el carrito directamente:
- * todas reciben funciones (lambdas) desde aquí (state hoisting).
- */
-private object Rutas {
-    const val BIENVENIDA = "bienvenida"
-    const val REGISTRO = "registro"
-    const val INICIO = "inicio"
-    const val DETALLE = "detalle/{productoId}"
-    const val CARRITO = "carrito"
-
-    fun detalle(productoId: Int) = "detalle/$productoId"
-}
+import com.tecsup.mibodega.ui.theme.BodegaTheme
 
 @Composable
 fun ClienteApp() {
     val navController = rememberNavController()
 
-    // El carrito vive aquí arriba, no en ninguna Screen.
     var carrito by remember { mutableStateOf<List<ItemCarrito>>(emptyList()) }
+    var favoritosIds by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var pedidos by remember { mutableStateOf<List<Pedido>>(emptyList()) }
+    var modoOscuro by remember { mutableStateOf(false) }
 
-    NavHost(
-        navController = navController,
-        startDestination = Rutas.BIENVENIDA
-    ) {
-        composable(Rutas.BIENVENIDA) {
-            BienvenidaScreen(
-                onRegistrarse = { navController.navigate(Rutas.REGISTRO) },
-                onIniciarSesion = { /* TODO: pantalla de login, aún no está en el mockup */ },
-                onTerminos = { /* TODO: abrir términos y condiciones */ }
-            )
-        }
+    var subtotalTemp by remember { mutableStateOf(0.0) }
 
-        composable(Rutas.REGISTRO) {
-            RegistroScreen(
-                onVolver = { navController.popBackStack() },
-                onCrearCuenta = { nombre, telefono, direccion, referencia ->
-                    // TODO: guardar estos datos cuando exista el registro real
-                    navController.navigate(Rutas.INICIO) {
-                        popUpTo(Rutas.BIENVENIDA) { inclusive = true }
-                    }
-                }
-            )
-        }
-
-        composable(Rutas.INICIO) {
-            InicioScreen(
-                cantidadCarrito = carrito.sumOf { it.cantidad },
-                onVerCarrito = { navController.navigate(Rutas.CARRITO) },
-                onProductoClick = { producto ->
-                    navController.navigate(Rutas.detalle(producto.id))
-                },
-                onAgregarProducto = { producto ->
-                    carrito = agregarOSumarProducto(carrito, producto, 1)
-                }
-            )
-        }
-
-        composable(
-            route = Rutas.DETALLE,
-            arguments = listOf(navArgument("productoId") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val productoId = backStackEntry.arguments?.getInt("productoId") ?: 0
-            val producto = listaProductosFake.first { it.id == productoId }
-
-            DetalleProductoScreen(
-                producto = producto,
-                onVolver = { navController.popBackStack() },
-                onAgregarAlCarrito = { productoSeleccionado, cantidad ->
-                    carrito = agregarOSumarProducto(carrito, productoSeleccionado, cantidad)
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable(Rutas.CARRITO) {
-            CarritoScreen(
-                carrito = carrito,
-                onVolver = { navController.popBackStack() },
-                onIncrementar = { producto ->
-                    carrito = carrito.map {
-                        if (it.producto.id == producto.id) it.copy(cantidad = it.cantidad + 1) else it
-                    }
-                },
-                onDecrementar = { producto ->
-                    carrito = carrito.mapNotNull {
-                        when {
-                            it.producto.id != producto.id -> it
-                            it.cantidad > 1 -> it.copy(cantidad = it.cantidad - 1)
-                            else -> null // si llega a 0, se elimina de la lista
+    BodegaTheme(darkTheme = modoOscuro) {
+        NavHost(
+            navController = navController,
+            startDestination = "bienvenida",
+            enterTransition = { fadeIn() },
+            exitTransition = { fadeOut() }
+        ) {
+            composable("bienvenida") {
+                BienvenidaScreen(
+                    onRegistrarse = { navController.navigate("registro") },
+                    onIniciarSesion = { navController.navigate("login") },
+                    onTerminos = {}
+                )
+            }
+            composable("login") {
+                LoginScreen(
+                    onLoginExitoso = {
+                        navController.navigate("inicio") {
+                            popUpTo("bienvenida") { inclusive = true }
+                        }
+                    },
+                    onVolver = { navController.popBackStack() }
+                )
+            }
+            composable("registro") {
+                RegistroScreen(
+                    onVolver = { navController.popBackStack() },
+                    onCrearCuenta = { _, _, _, _ ->
+                        navController.navigate("inicio") {
+                            popUpTo("bienvenida") { inclusive = true }
                         }
                     }
-                },
-                onEliminar = { producto ->
-                    carrito = carrito.filterNot { it.producto.id == producto.id }
-                },
-                onContinuarPedido = { /* TODO: navegar a DatosEntregaScreen */ }
-            )
+                )
+            }
+            composable("inicio") {
+                InicioScreen(
+                    productos = listaProductosFake,
+                    favoritosIds = favoritosIds,
+                    cantidadCarrito = carrito.sumOf { it.cantidad },
+                    onVerCarrito = { navController.navigate("carrito") },
+                    onToggleFavorito = { producto ->
+                        favoritosIds = if (favoritosIds.contains(producto.id)) {
+                            favoritosIds - producto.id
+                        } else {
+                            favoritosIds + producto.id
+                        }
+                    },
+                    onAgregarCarrito = { producto ->
+                        val existente = carrito.find { it.producto.id == producto.id }
+                        carrito = if (existente != null) {
+                            carrito.map { if (it.producto.id == producto.id) it.copy(cantidad = it.cantidad + 1) else it }
+                        } else {
+                            carrito + ItemCarrito(producto, 1)
+                        }
+                    },
+                    onNavegar = { ruta ->
+                        if (ruta != "inicio") navController.navigate(ruta)
+                    }
+                )
+            }
+            composable("favoritos") {
+                val favoritosLista = listaProductosFake.filter { favoritosIds.contains(it.id) }
+                FavoritosScreen(
+                    productosFavoritos = favoritosLista,
+                    onToggleFavorito = { producto ->
+                        favoritosIds = favoritosIds - producto.id
+                    },
+                    onAgregarCarrito = { producto ->
+                        val existente = carrito.find { it.producto.id == producto.id }
+                        carrito = if (existente != null) {
+                            carrito.map { if (it.producto.id == producto.id) it.copy(cantidad = it.cantidad + 1) else it }
+                        } else {
+                            carrito + ItemCarrito(producto, 1)
+                        }
+                    },
+                    onNavegar = { ruta ->
+                        if (ruta != "favoritos") navController.navigate(ruta)
+                    }
+                )
+            }
+            composable("categorias") {
+                CategoriasScreen(
+                    onCategoriaClick = { _ ->
+                        navController.navigate("inicio")
+                    },
+                    onNavegar = { ruta ->
+                        if (ruta != "categorias") navController.navigate(ruta)
+                    }
+                )
+            }
+            composable("carrito") {
+                subtotalTemp = carrito.sumOf { it.producto.precio * it.cantidad }
+                CarritoScreen(
+                    carrito = carrito,
+                    onVolver = { navController.popBackStack() },
+                    onIncrementar = { producto ->
+                        carrito = carrito.map { if (it.producto.id == producto.id) it.copy(cantidad = it.cantidad + 1) else it }
+                    },
+                    onDecrementar = { producto ->
+                        carrito = carrito.mapNotNull {
+                            if (it.producto.id == producto.id) {
+                                if (it.cantidad > 1) it.copy(cantidad = it.cantidad - 1) else null
+                            } else it
+                        }
+                    },
+                    onEliminar = { producto ->
+                        carrito = carrito.filterNot { it.producto.id == producto.id }
+                    },
+                    onContinuarPedido = {
+                        navController.navigate("entrega")
+                    }
+                )
+            }
+            composable("entrega") {
+                DatosEntregaScreen(
+                    subtotal = subtotalTemp,
+                    onVolver = { navController.popBackStack() },
+                    onConfirmarPedido = { tipoEntrega, direccion, totalFinal ->
+                        val nuevoPedido = Pedido(
+                            id = (pedidos.size + 1).toString(),
+                            items = carrito,
+                            total = totalFinal,
+                            tipoEntrega = tipoEntrega,
+                            direccion = direccion,
+                            fecha = "02/10/2026"
+                        )
+                        pedidos = pedidos + nuevoPedido
+                        carrito = emptyList()
+                        navController.navigate("confirmacion") {
+                            popUpTo("inicio")
+                        }
+                    }
+                )
+            }
+            composable("confirmacion") {
+                ConfirmacionScreen(
+                    onIrAInicio = {
+                        navController.navigate("inicio") {
+                            popUpTo("bienvenida") { inclusive = true }
+                        }
+                    },
+                    onVerPedidos = {
+                        navController.navigate("pedidos") {
+                            popUpTo("inicio")
+                        }
+                    }
+                )
+            }
+            composable("pedidos") {
+                PedidosScreen(
+                    pedidos = pedidos,
+                    onNavegar = { ruta ->
+                        if (ruta != "pedidos") navController.navigate(ruta)
+                    }
+                )
+            }
+            composable("perfil") {
+                PerfilScreen(
+                    modoOscuro = modoOscuro,
+                    onModoOscuroChange = { modoOscuro = it },
+                    onCerrarSesion = {
+                        navController.navigate("bienvenida") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    onNavegar = { ruta ->
+                        if (ruta != "perfil") navController.navigate(ruta)
+                    }
+                )
+            }
         }
-    }
-}
-
-/**
- * Si el producto ya está en el carrito, le suma la cantidad;
- * si no, lo agrega como un ItemCarrito nuevo.
- */
-private fun agregarOSumarProducto(
-    carrito: List<ItemCarrito>,
-    producto: Producto,
-    cantidad: Int
-): List<ItemCarrito> {
-    val itemExistente = carrito.find { it.producto.id == producto.id }
-    return if (itemExistente != null) {
-        carrito.map {
-            if (it.producto.id == producto.id) it.copy(cantidad = it.cantidad + cantidad) else it
-        }
-    } else {
-        carrito + ItemCarrito(producto = producto, cantidad = cantidad)
     }
 }
