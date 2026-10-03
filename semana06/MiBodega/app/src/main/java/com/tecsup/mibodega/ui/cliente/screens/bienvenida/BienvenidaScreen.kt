@@ -3,24 +3,15 @@ package com.tecsup.mibodega.ui.cliente.screens.bienvenida
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -28,8 +19,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.tecsup.mibodega.R
-import com.tecsup.mibodega.ui.componentes.BotonPrimario
-import com.tecsup.mibodega.ui.componentes.BotonSecundario
 import com.tecsup.mibodega.ui.theme.AzulEnlace
 import com.tecsup.mibodega.ui.theme.FondoClaro
 import com.tecsup.mibodega.ui.theme.VerdeBodega
@@ -53,7 +42,7 @@ fun BienvenidaScreen(
             .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(32.dp))
 
         Box(
             modifier = Modifier
@@ -90,19 +79,37 @@ fun BienvenidaScreen(
 
         Spacer(Modifier.weight(1f))
 
-        BotonPrimario(
-            texto = "Registrarme",
-            subtexto = "con mi teléfono",
-            icono = rememberVectorPainter(Icons.Default.Phone),
-            onClick = onRegistrarse
-        )
+        Button(
+            onClick = onRegistrarse,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp),
+            shape = RoundedCornerShape(27.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = VerdeBodega)
+        ) {
+            Icon(Icons.Default.Phone, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Registrarme con mi teléfono",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
 
         Spacer(Modifier.height(12.dp))
 
-        BotonSecundario(
-            texto = "Iniciar sesión",
-            onClick = onIniciarSesion
-        )
+        OutlinedButton(
+            onClick = onIniciarSesion,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp),
+            shape = RoundedCornerShape(27.dp)
+        ) {
+            Text(
+                text = "Iniciar sesión",
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
 
         Spacer(Modifier.height(20.dp))
 
