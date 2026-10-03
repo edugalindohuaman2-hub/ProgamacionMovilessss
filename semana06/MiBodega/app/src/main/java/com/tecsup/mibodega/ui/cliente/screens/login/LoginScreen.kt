@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun LoginScreen(
+    usuarioRegistrado: String,
+    passwordRegistrada: String,
     onLoginExitoso: () -> Unit,
     onVolver: () -> Unit
 ) {
@@ -60,10 +62,13 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                if (usuario == "999999999" && password == "123456") {
+                val userValid = usuario == "999999999" || (usuarioRegistrado.isNotBlank() && usuario == usuarioRegistrado)
+                val passValid = password == "123456" || (passwordRegistrada.isNotBlank() && password == passwordRegistrada)
+
+                if (userValid && passValid) {
                     onLoginExitoso()
                 } else {
-                    errorMensaje = "Usuario o contraseña incorrectos (Prueba: 999999999 / 123456)"
+                    errorMensaje = "Usuario o contraseña incorrectos"
                 }
             },
             modifier = Modifier.fillMaxWidth()

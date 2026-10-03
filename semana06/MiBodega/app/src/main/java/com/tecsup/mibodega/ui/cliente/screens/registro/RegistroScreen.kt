@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tecsup.mibodega.ui.theme.AzulEnlace
@@ -25,16 +26,18 @@ import com.tecsup.mibodega.ui.theme.VerdeBodega
 @Composable
 fun RegistroScreen(
     onVolver: () -> Unit,
-    onCrearCuenta: (nombre: String, telefono: String, direccion: String, referencia: String) -> Unit
+    onCrearCuenta: (nombre: String, telefono: String, password: String, direccion: String, referencia: String) -> Unit
 ) {
     var nombre by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
     var referencia by remember { mutableStateOf("") }
     var intentado by remember { mutableStateOf(false) }
 
     val errorNombre = intentado && nombre.isBlank()
     val errorTelefono = intentado && telefono.isBlank()
+    val errorPassword = intentado && password.isBlank()
     val errorDireccion = intentado && direccion.isBlank()
 
     Column(
@@ -138,6 +141,22 @@ fun RegistroScreen(
         Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Contraseña") },
+            placeholder = { Text("******") },
+            isError = errorPassword,
+            visualTransformation = PasswordVisualTransformation(),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        if (errorPassword) {
+            Text(text = "Campo obligatorio", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
+        Spacer(Modifier.height(16.dp))
+
+        OutlinedTextField(
             value = direccion,
             onValueChange = { direccion = it },
             label = { Text("Dirección de entrega") },
@@ -167,8 +186,8 @@ fun RegistroScreen(
         Button(
             onClick = {
                 intentado = true
-                if (nombre.isNotBlank() && telefono.isNotBlank() && direccion.isNotBlank()) {
-                    onCrearCuenta(nombre, telefono, direccion, referencia)
+                if (nombre.isNotBlank() && telefono.isNotBlank() && password.isNotBlank() && direccion.isNotBlank()) {
+                    onCrearCuenta(nombre, telefono, password, direccion, referencia)
                 }
             },
             modifier = Modifier

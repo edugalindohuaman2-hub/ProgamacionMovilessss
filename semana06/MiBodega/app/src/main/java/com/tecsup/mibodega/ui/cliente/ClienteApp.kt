@@ -33,9 +33,13 @@ fun ClienteApp() {
 
     var nombreUsuario by remember { mutableStateOf("") }
     var telefonoUsuario by remember { mutableStateOf("") }
+    var passwordUsuario by remember { mutableStateOf("") }
     var direccionUsuario by remember { mutableStateOf("") }
 
     var subtotalTemp by remember { mutableStateOf(0.0) }
+    var codigoUltimoPedido by remember { mutableStateOf("#1024") }
+    var totalUltimoPedido by remember { mutableStateOf(0.0) }
+    var direccionUltimoPedido by remember { mutableStateOf("") }
 
     BodegaTheme(darkTheme = modoOscuro) {
         NavHost(
@@ -53,11 +57,14 @@ fun ClienteApp() {
             }
             composable("login") {
                 LoginScreen(
+                    usuarioRegistrado = telefonoUsuario,
+                    passwordRegistrada = passwordUsuario,
                     onLoginExitoso = {
-                        nombreUsuario = "Cliente Frecuente"
-                        telefonoUsuario = "999999999"
-                        direccionUsuario = "Av. Principal 123"
-                        navController.navigate("inicio") {
+                        if (nombreUsuario.isBlank()) {
+                            nombreUsuario = "Cliente Frecuente"
+                            direccionUsuario = "Av. Principal 123"
+                        }
+                        navController.navigate("inicio/Todos") {
                             popUpTo("bienvenida") { inclusive = true }
                         }
                     },
@@ -67,21 +74,27 @@ fun ClienteApp() {
             composable("registro") {
                 RegistroScreen(
                     onVolver = { navController.popBackStack() },
-                    onCrearCuenta = { nombre, telefono, direccion, _ ->
+                    onCrearCuenta = { nombre, telefono, password, direccion, _ ->
                         nombreUsuario = nombre
                         telefonoUsuario = telefono
+                        passwordUsuario = password
                         direccionUsuario = direccion
-                        navController.navigate("inicio") {
+                        navController.navigate("inicio/Todos") {
                             popUpTo("bienvenida") { inclusive = true }
                         }
                     }
                 )
             }
-            composable("inicio") {
+            composable(
+                route = "inicio/{categoria}",
+                arguments = listOf(navArgument("categoria") { type = NavType.StringType; defaultValue = "Todos" })
+            ) { backStackEntry ->
+                val categoria = backStackEntry.arguments?.getString("categoria") ?: "Todos"
                 InicioScreen(
                     productos = listaProductosFake,
                     favoritosIds = favoritosIds,
                     cantidadCarrito = carrito.sumOf { it.cantidad },
+                    categoriaInicial = categoria,
                     onVerCarrito = { navController.navigate("carrito") },
                     onToggleFavorito = { producto ->
                         favoritosIds = if (favoritosIds.contains(producto.id)) {
@@ -102,7 +115,13 @@ fun ClienteApp() {
                         navController.navigate("detalle/${producto.id}")
                     },
                     onNavegar = { ruta ->
-                        if (ruta != "inicio") navController.navigate(ruta)
+                        if (ruta == "inicio") {
+                            navController.navigate("inicio/Todos") {
+                                popUpTo("inicio/Todos") { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate(ruta)
+                        }
                     }
                 )
             }
@@ -155,17 +174,29 @@ fun ClienteApp() {
                         navController.navigate("detalle/${producto.id}")
                     },
                     onNavegar = { ruta ->
-                        if (ruta != "favoritos") navController.navigate(ruta)
+                        if (ruta == "inicio") {
+                            navController.navigate("inicio/Todos") {
+                                popUpTo("inicio/Todos") { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate(ruta)
+                        }
                     }
                 )
             }
             composable("categorias") {
                 CategoriasScreen(
-                    onCategoriaClick = { _ ->
-                        navController.navigate("inicio")
+                    onCategoriaClick = { categoria ->
+                        navController.navigate("inicio/$categoria")
                     },
                     onNavegar = { ruta ->
-                        if (ruta != "categorias") navController.navigate(ruta)
+                        if (ruta == "inicio") {
+                            navController.navigate("inicio/Todos") {
+                                popUpTo("inicio/Todos") { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate(ruta)
+                        }
                     }
                 )
             }
@@ -187,6 +218,9 @@ fun ClienteApp() {
                     onEliminar = { producto ->
                         carrito = carrito.filterNot { it.producto.id == producto.id }
                     },
+                    onVaciarCarrito = {
+                        carrito = emptyList()
+                    },
                     onContinuarPedido = {
                         navController.navigate("entrega")
                     }
@@ -195,34 +229,45 @@ fun ClienteApp() {
             composable("entrega") {
                 DatosEntregaScreen(
                     subtotal = subtotalTemp,
+                    nombreInicial = nombreUsuario,
+                    telefonoInicial = telefonoUsuario,
+                    direccionInicial = direccionUsuario,
                     onVolver = { navController.popBackStack() },
-                    onConfirmarPedido = { tipoEntrega, direccion, totalFinal ->
+                    onConfirmarPedido = { tipoEntrega, direccion, metodoPago, totalFinal ->
+                        val codigo = "#${(1000..9999).random()}"
+                        codigoUltimoPedido = codigo
+                        totalUltimoPedido = totalFinal
+                        direccionUltimoPedido = direccion
+
                         val nuevoPedido = Pedido(
-                            id = (pedidos.size + 1).toString(),
+                            id = codigo,
                             items = carrito,
                             total = totalFinal,
-                            tipoEntrega = tipoEntrega,
+                            tipoEntrega = "$tipoEntrega ($metodoPago)",
                             direccion = direccion,
                             fecha = "02/10/2026"
                         )
                         pedidos = pedidos + nuevoPedido
                         carrito = emptyList()
                         navController.navigate("confirmacion") {
-                            popUpTo("inicio")
+                            popUpTo("inicio/Todos")
                         }
                     }
                 )
             }
             composable("confirmacion") {
                 ConfirmacionScreen(
+                    codigoPedido = codigoUltimoPedido,
+                    totalPedido = totalUltimoPedido,
+                    direccionPedido = direccionUltimoPedido,
                     onIrAInicio = {
-                        navController.navigate("inicio") {
+                        navController.navigate("inicio/Todos") {
                             popUpTo("bienvenida") { inclusive = true }
                         }
                     },
                     onVerPedidos = {
                         navController.navigate("pedidos") {
-                            popUpTo("inicio")
+                            popUpTo("inicio/Todos")
                         }
                     }
                 )
@@ -231,7 +276,13 @@ fun ClienteApp() {
                 PedidosScreen(
                     pedidos = pedidos,
                     onNavegar = { ruta ->
-                        if (ruta != "pedidos") navController.navigate(ruta)
+                        if (ruta == "inicio") {
+                            navController.navigate("inicio/Todos") {
+                                popUpTo("inicio/Todos") { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate(ruta)
+                        }
                     }
                 )
             }
@@ -245,13 +296,20 @@ fun ClienteApp() {
                     onCerrarSesion = {
                         nombreUsuario = ""
                         telefonoUsuario = ""
+                        passwordUsuario = ""
                         direccionUsuario = ""
                         navController.navigate("bienvenida") {
                             popUpTo(0) { inclusive = true }
                         }
                     },
                     onNavegar = { ruta ->
-                        if (ruta != "perfil") navController.navigate(ruta)
+                        if (ruta == "inicio") {
+                            navController.navigate("inicio/Todos") {
+                                popUpTo("inicio/Todos") { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate(ruta)
+                        }
                     }
                 )
             }

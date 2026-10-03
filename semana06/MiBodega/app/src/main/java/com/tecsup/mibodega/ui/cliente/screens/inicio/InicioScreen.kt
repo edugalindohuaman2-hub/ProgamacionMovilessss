@@ -29,13 +29,14 @@ fun InicioScreen(
     productos: List<Producto>,
     favoritosIds: List<Int>,
     cantidadCarrito: Int,
+    categoriaInicial: String = "Todos",
     onVerCarrito: () -> Unit,
     onToggleFavorito: (Producto) -> Unit,
     onAgregarCarrito: (Producto) -> Unit,
     onProductoClick: (Producto) -> Unit,
     onNavegar: (String) -> Unit
 ) {
-    var categoriaSeleccionada by remember { mutableStateOf("Todos") }
+    var categoriaSeleccionada by remember { mutableStateOf(categoriaInicial) }
     var textoBusqueda by remember { mutableStateOf("") }
     var ordenarMenorAMayor by remember { mutableStateOf(true) }
 
@@ -126,14 +127,26 @@ fun InicioScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                TextButton(onClick = { ordenarMenorAMayor = true }) {
-                    Text("Precio: Menor a Mayor", color = if (ordenarMenorAMayor) VerdeBodega else MaterialTheme.colorScheme.onSurface)
-                }
-                TextButton(onClick = { ordenarMenorAMayor = false }) {
-                    Text("Precio: Mayor a Menor", color = if (!ordenarMenorAMayor) VerdeBodega else MaterialTheme.colorScheme.onSurface)
-                }
+                FilterChip(
+                    selected = ordenarMenorAMayor,
+                    onClick = { ordenarMenorAMayor = true },
+                    label = { Text("Menor precio") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = VerdeBodega,
+                        selectedLabelColor = Color.White
+                    )
+                )
+                FilterChip(
+                    selected = !ordenarMenorAMayor,
+                    onClick = { ordenarMenorAMayor = false },
+                    label = { Text("Mayor precio") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = VerdeBodega,
+                        selectedLabelColor = Color.White
+                    )
+                )
             }
 
             Spacer(modifier = Modifier.height(4.dp))

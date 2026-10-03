@@ -90,6 +90,15 @@ fun ProductoCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = producto.descripcion,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
