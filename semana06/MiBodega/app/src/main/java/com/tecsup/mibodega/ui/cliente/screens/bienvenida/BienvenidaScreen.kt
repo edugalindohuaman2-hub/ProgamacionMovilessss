@@ -26,20 +26,14 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tecsup.mibodega.R
 import com.tecsup.mibodega.ui.componentes.BotonPrimario
 import com.tecsup.mibodega.ui.componentes.BotonSecundario
 import com.tecsup.mibodega.ui.theme.AzulEnlace
-import com.tecsup.mibodega.ui.theme.BodegaTheme
 import com.tecsup.mibodega.ui.theme.FondoClaro
 import com.tecsup.mibodega.ui.theme.VerdeBodega
 
-/**
- * Pantalla 1: Registro / Login (mockup "Cliente").
- * No sabe navegar sola: recibe qué hacer por parámetro (callbacks).
- */
 @Composable
 fun BienvenidaScreen(
     onRegistrarse: () -> Unit,
@@ -61,11 +55,29 @@ fun BienvenidaScreen(
     ) {
         Spacer(Modifier.height(24.dp))
 
-        IlustracionBodega()
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ilustracion_bodega),
+                contentDescription = "Ilustración de la bodega",
+                modifier = Modifier.size(200.dp)
+            )
+        }
 
         Spacer(Modifier.height(16.dp))
 
-        TituloMiBodega()
+        Text(
+            text = buildAnnotatedString {
+                append("Mi ")
+                withStyle(SpanStyle(color = VerdeBodega)) { append("Bodega") }
+            },
+            style = MaterialTheme.typography.displayMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
 
         Spacer(Modifier.height(12.dp))
 
@@ -94,64 +106,20 @@ fun BienvenidaScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        PieTerminos(onTerminos = onTerminos)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "Al continuar aceptas nuestros",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = "Términos y Condiciones",
+                style = MaterialTheme.typography.bodySmall,
+                color = AzulEnlace,
+                modifier = Modifier.clickable(onClick = onTerminos)
+            )
+        }
 
         Spacer(Modifier.height(24.dp))
     }
 }
-
-// Sub-composables PRIVADOS: solo los usa esta pantalla, por eso no van a "componentes".
-
-@Composable
-private fun IlustracionBodega() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(220.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(R.drawable.ilustracion_bodega),
-            contentDescription = "Ilustración de la bodega",
-            modifier = Modifier.size(200.dp)
-        )
-    }
-}
-
-@Composable
-private fun TituloMiBodega() {
-    Text(
-        text = buildAnnotatedString {
-            append("Mi ")
-            withStyle(SpanStyle(color = VerdeBodega)) { append("Bodega") }
-        },
-        style = MaterialTheme.typography.displayMedium,
-        color = MaterialTheme.colorScheme.onBackground
-    )
-}
-
-@Composable
-private fun PieTerminos(onTerminos: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = "Al continuar aceptas nuestros",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = "Términos y Condiciones",
-            style = MaterialTheme.typography.bodySmall,
-            color = AzulEnlace,
-            modifier = Modifier.clickable(onClick = onTerminos)
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun BienvenidaPreview() {
-    BodegaTheme {
-        BienvenidaScreen({}, {}, {})
-    }
-}
-
