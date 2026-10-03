@@ -1,19 +1,27 @@
 package com.tecsup.mibodega.ui.cliente.screens.inicio
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.tecsup.mibodega.ui.cliente.modelo.Producto
 import com.tecsup.mibodega.ui.cliente.modelo.listaCategorias
 import com.tecsup.mibodega.ui.componentes.BarraNavegacionInferior
 import com.tecsup.mibodega.ui.componentes.ProductoCard
+import com.tecsup.mibodega.ui.theme.GrisClaro
+import com.tecsup.mibodega.ui.theme.VerdeBodega
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,13 +32,17 @@ fun InicioScreen(
     onVerCarrito: () -> Unit,
     onToggleFavorito: (Producto) -> Unit,
     onAgregarCarrito: (Producto) -> Unit,
+    onProductoClick: (Producto) -> Unit,
     onNavegar: (String) -> Unit
 ) {
     var categoriaSeleccionada by remember { mutableStateOf("Todos") }
+    var textoBusqueda by remember { mutableStateOf("") }
     var ordenarMenorAMayor by remember { mutableStateOf(true) }
 
-    val filtrados = productos.filter {
-        categoriaSeleccionada == "Todos" || it.categoria == categoriaSeleccionada
+    val filtrados = productos.filter { producto ->
+        val coincideCategoria = categoriaSeleccionada == "Todos" || producto.categoria == categoriaSeleccionada
+        val coincideBusqueda = producto.nombre.contains(textoBusqueda, ignoreCase = true)
+        coincideCategoria && coincideBusqueda
     }
 
     val ordenados = if (ordenarMenorAMayor) {
@@ -42,13 +54,15 @@ fun InicioScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mi Bodega - Inicio") },
+                title = { Text("Mi Bodega") },
                 actions = {
                     IconButton(onClick = onVerCarrito) {
                         BadgedBox(
                             badge = {
                                 if (cantidadCarrito > 0) {
-                                    Badge { Text("$cantidadCarrito") }
+                                    Badge(containerColor = Color.Red, contentColor = Color.White) {
+                                        Text("$cantidadCarrito")
+                                    }
                                 }
                             }
                         ) {
@@ -69,16 +83,41 @@ fun InicioScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
         ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = textoBusqueda,
+                onValueChange = { textoBusqueda = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Buscar productos...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = GrisClaro,
+                    focusedContainerColor = GrisClaro,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = VerdeBodega
+                )
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(listaCategorias) { cat ->
+                    val seleccionado = cat == categoriaSeleccionada
                     FilterChip(
-                        selected = categoriaSeleccionada == cat,
+                        selected = seleccionado,
                         onClick = { categoriaSeleccionada = cat },
-                        label = { Text(cat) }
+                        label = { Text(cat) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = VerdeBodega,
+                            selectedLabelColor = Color.White
+                        )
                     )
                 }
             }
@@ -89,18 +128,20 @@ fun InicioScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Button(onClick = { ordenarMenorAMayor = true }) {
-                    Text("Precio: Menor a Mayor")
+                TextButton(onClick = { ordenarMenorAMayor = true }) {
+                    Text("Precio: Menor a Mayor", color = if (ordenarMenorAMayor) VerdeBodega else MaterialTheme.colorScheme.onSurface)
                 }
-                Button(onClick = { ordenarMenorAMayor = false }) {
-                    Text("Precio: Mayor a Menor")
+                TextButton(onClick = { ordenarMenorAMayor = false }) {
+                    Text("Precio: Mayor a Menor", color = if (!ordenarMenorAMayor) VerdeBodega else MaterialTheme.colorScheme.onSurface)
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(ordenados) { producto ->
@@ -109,7 +150,8 @@ fun InicioScreen(
                         producto = producto,
                         esFavorito = esFav,
                         onFavoritoClick = { onToggleFavorito(producto) },
-                        onAgregarClick = { onAgregarCarrito(producto) }
+                        onAgregarClick = { onAgregarCarrito(producto) },
+                        onClick = { onProductoClick(producto) }
                     )
                 }
             }

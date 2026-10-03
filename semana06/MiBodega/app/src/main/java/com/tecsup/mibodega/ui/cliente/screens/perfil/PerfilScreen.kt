@@ -11,6 +11,9 @@ import com.tecsup.mibodega.ui.componentes.BarraNavegacionInferior
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(
+    nombre: String,
+    telefono: String,
+    direccion: String,
     modoOscuro: Boolean,
     onModoOscuroChange: (Boolean) -> Unit,
     onCerrarSesion: () -> Unit,
@@ -37,9 +40,9 @@ fun PerfilScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(text = "Datos de Usuario", style = MaterialTheme.typography.titleLarge)
-            Text(text = "Nombre: Cliente Mi Bodega")
-            Text(text = "Teléfono: 999999999")
-            Text(text = "Dirección: Av. Principal 123")
+            Text(text = "Nombre: ${if (nombre.isNotBlank()) nombre else "Cliente Mi Bodega"}")
+            Text(text = "Teléfono: ${if (telefono.isNotBlank()) telefono else "999999999"}")
+            Text(text = "Dirección: ${if (direccion.isNotBlank()) direccion else "Av. Principal 123"}")
 
             HorizontalDivider()
 

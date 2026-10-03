@@ -2,14 +2,17 @@ package com.tecsup.mibodega.ui.cliente
 
 import androidx.compose.animation.*
 import androidx.compose.runtime.*
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.tecsup.mibodega.ui.cliente.modelo.*
 import com.tecsup.mibodega.ui.cliente.screens.bienvenida.BienvenidaScreen
 import com.tecsup.mibodega.ui.cliente.screens.carrito.CarritoScreen
 import com.tecsup.mibodega.ui.cliente.screens.categorias.CategoriasScreen
 import com.tecsup.mibodega.ui.cliente.screens.confirmacion.ConfirmacionScreen
+import com.tecsup.mibodega.ui.cliente.screens.detalle.DetalleProductoScreen
 import com.tecsup.mibodega.ui.cliente.screens.entrega.DatosEntregaScreen
 import com.tecsup.mibodega.ui.cliente.screens.favoritos.FavoritosScreen
 import com.tecsup.mibodega.ui.cliente.screens.inicio.InicioScreen
@@ -27,6 +30,10 @@ fun ClienteApp() {
     var favoritosIds by remember { mutableStateOf<List<Int>>(emptyList()) }
     var pedidos by remember { mutableStateOf<List<Pedido>>(emptyList()) }
     var modoOscuro by remember { mutableStateOf(false) }
+
+    var nombreUsuario by remember { mutableStateOf("") }
+    var telefonoUsuario by remember { mutableStateOf("") }
+    var direccionUsuario by remember { mutableStateOf("") }
 
     var subtotalTemp by remember { mutableStateOf(0.0) }
 
@@ -47,6 +54,9 @@ fun ClienteApp() {
             composable("login") {
                 LoginScreen(
                     onLoginExitoso = {
+                        nombreUsuario = "Cliente Frecuente"
+                        telefonoUsuario = "999999999"
+                        direccionUsuario = "Av. Principal 123"
                         navController.navigate("inicio") {
                             popUpTo("bienvenida") { inclusive = true }
                         }
@@ -57,7 +67,10 @@ fun ClienteApp() {
             composable("registro") {
                 RegistroScreen(
                     onVolver = { navController.popBackStack() },
-                    onCrearCuenta = { _, _, _, _ ->
+                    onCrearCuenta = { nombre, telefono, direccion, _ ->
+                        nombreUsuario = nombre
+                        telefonoUsuario = telefono
+                        direccionUsuario = direccion
                         navController.navigate("inicio") {
                             popUpTo("bienvenida") { inclusive = true }
                         }
@@ -85,8 +98,41 @@ fun ClienteApp() {
                             carrito + ItemCarrito(producto, 1)
                         }
                     },
+                    onProductoClick = { producto ->
+                        navController.navigate("detalle/${producto.id}")
+                    },
                     onNavegar = { ruta ->
                         if (ruta != "inicio") navController.navigate(ruta)
+                    }
+                )
+            }
+            composable(
+                route = "detalle/{productoId}",
+                arguments = listOf(navArgument("productoId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val productoId = backStackEntry.arguments?.getInt("productoId") ?: 1
+                val producto = listaProductosFake.find { it.id == productoId } ?: listaProductosFake.first()
+                val esFav = favoritosIds.contains(producto.id)
+
+                DetalleProductoScreen(
+                    producto = producto,
+                    esFavorito = esFav,
+                    onToggleFavorito = { prod ->
+                        favoritosIds = if (favoritosIds.contains(prod.id)) {
+                            favoritosIds - prod.id
+                        } else {
+                            favoritosIds + prod.id
+                        }
+                    },
+                    onVolver = { navController.popBackStack() },
+                    onAgregarAlCarrito = { prod, cant ->
+                        val existente = carrito.find { it.producto.id == prod.id }
+                        carrito = if (existente != null) {
+                            carrito.map { if (it.producto.id == prod.id) it.copy(cantidad = it.cantidad + cant) else it }
+                        } else {
+                            carrito + ItemCarrito(prod, cant)
+                        }
+                        navController.popBackStack()
                     }
                 )
             }
@@ -104,6 +150,9 @@ fun ClienteApp() {
                         } else {
                             carrito + ItemCarrito(producto, 1)
                         }
+                    },
+                    onProductoClick = { producto ->
+                        navController.navigate("detalle/${producto.id}")
                     },
                     onNavegar = { ruta ->
                         if (ruta != "favoritos") navController.navigate(ruta)
@@ -188,9 +237,15 @@ fun ClienteApp() {
             }
             composable("perfil") {
                 PerfilScreen(
+                    nombre = nombreUsuario,
+                    telefono = telefonoUsuario,
+                    direccion = direccionUsuario,
                     modoOscuro = modoOscuro,
                     onModoOscuroChange = { modoOscuro = it },
                     onCerrarSesion = {
+                        nombreUsuario = ""
+                        telefonoUsuario = ""
+                        direccionUsuario = ""
                         navController.navigate("bienvenida") {
                             popUpTo(0) { inclusive = true }
                         }
