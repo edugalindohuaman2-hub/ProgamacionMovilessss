@@ -35,7 +35,8 @@ fun LoginScreen(
         OutlinedTextField(
             value = usuario,
             onValueChange = { usuario = it },
-            label = { Text("Usuario o Teléfono") },
+            label = { Text("Correo o Teléfono") },
+            placeholder = { Text("admin@gmail.com") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -45,6 +46,7 @@ fun LoginScreen(
             value = password,
             onValueChange = { password = it },
             label = { Text("Contraseña") },
+            placeholder = { Text("123456") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true
@@ -62,13 +64,13 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                val userValid = usuario == "999999999" || (usuarioRegistrado.isNotBlank() && usuario == usuarioRegistrado)
+                val userValid = usuario == "admin@gmail.com" || usuario == "999999999" || (usuarioRegistrado.isNotBlank() && usuario == usuarioRegistrado)
                 val passValid = password == "123456" || (passwordRegistrada.isNotBlank() && password == passwordRegistrada)
 
                 if (userValid && passValid) {
                     onLoginExitoso()
                 } else {
-                    errorMensaje = "Usuario o contraseña incorrectos"
+                    errorMensaje = "Credenciales incorrectas. Use admin@gmail.com / 123456"
                 }
             },
             modifier = Modifier.fillMaxWidth()
