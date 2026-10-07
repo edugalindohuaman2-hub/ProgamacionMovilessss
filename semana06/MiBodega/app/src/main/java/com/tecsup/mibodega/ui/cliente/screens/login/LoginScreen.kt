@@ -15,8 +15,8 @@ fun LoginScreen(
     onLoginExitoso: () -> Unit,
     onVolver: () -> Unit
 ) {
-    var usuario by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var usuario by remember { mutableStateOf("edudalindo@gmail.com") }
+    var password by remember { mutableStateOf("edugalindo01") }
     var errorMensaje by remember { mutableStateOf("") }
 
     Column(
@@ -36,7 +36,7 @@ fun LoginScreen(
             value = usuario,
             onValueChange = { usuario = it },
             label = { Text("Correo o Teléfono") },
-            placeholder = { Text("admin@gmail.com") },
+            placeholder = { Text("edudalindo@gmail.com") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -46,7 +46,7 @@ fun LoginScreen(
             value = password,
             onValueChange = { password = it },
             label = { Text("Contraseña") },
-            placeholder = { Text("123456") },
+            placeholder = { Text("edugalindo01") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true
@@ -64,13 +64,13 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                val userValid = usuario == "admin@gmail.com" || usuario == "999999999" || (usuarioRegistrado.isNotBlank() && usuario == usuarioRegistrado)
-                val passValid = password == "123456" || (passwordRegistrada.isNotBlank() && password == passwordRegistrada)
+                val userValid = usuario == "admin@gmail.com" || usuario == "edudalindo@gmail.com" || usuario == "999999999" || (usuarioRegistrado.isNotBlank() && usuario == usuarioRegistrado)
+                val passValid = password == "123456" || password == "edugalindo01" || (passwordRegistrada.isNotBlank() && password == passwordRegistrada)
 
                 if (userValid && passValid) {
                     onLoginExitoso()
                 } else {
-                    errorMensaje = "Credenciales incorrectas. Use admin@gmail.com / 123456"
+                    errorMensaje = "Credenciales incorrectas. Use edudalindo@gmail.com / edugalindo01"
                 }
             },
             modifier = Modifier.fillMaxWidth()

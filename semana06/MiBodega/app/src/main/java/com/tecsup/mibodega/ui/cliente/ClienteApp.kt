@@ -61,8 +61,9 @@ fun ClienteApp() {
                     passwordRegistrada = passwordUsuario,
                     onLoginExitoso = {
                         if (nombreUsuario.isBlank()) {
-                            nombreUsuario = "Cliente Frecuente"
-                            direccionUsuario = "Av. Principal 123"
+                            nombreUsuario = "Eduardo Galindo"
+                            telefonoUsuario = "987654321"
+                            direccionUsuario = "Av. Los Olivos 123"
                         }
                         navController.navigate("inicio/Todos") {
                             popUpTo("bienvenida") { inclusive = true }
