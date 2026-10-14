@@ -1,8 +1,78 @@
 package com.galindo.ayudacampus.data.prefs
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ajustes")
 
 class PreferenciasStore(
     private val context: Context
 ) {
+    companion object {
+        private val PERFIL_ACTIVO = stringPreferencesKey("perfil_activo")
+        private val USUARIO_ID = intPreferencesKey("usuario_id")
+        private val MODO_OSCURO = booleanPreferencesKey("modo_oscuro")
+        private val NOTIFICACIONES = booleanPreferencesKey("notificaciones")
+        private val RECIBIR_TICKETS = booleanPreferencesKey("recibir_tickets")
+    }
+
+    val perfilActivo: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[PERFIL_ACTIVO] ?: ""
+    }
+
+    val usuarioId: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[USUARIO_ID] ?: -1
+    }
+
+    val modoOscuro: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[MODO_OSCURO] ?: false
+    }
+
+    val notificaciones: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[NOTIFICACIONES] ?: true
+    }
+
+    val recibirTickets: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[RECIBIR_TICKETS] ?: true
+    }
+
+    suspend fun guardarSesion(rol: String, usuarioId: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[PERFIL_ACTIVO] = rol
+            prefs[USUARIO_ID] = usuarioId
+        }
+    }
+
+    suspend fun guardarModoOscuro(b: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[MODO_OSCURO] = b
+        }
+    }
+
+    suspend fun guardarNotificaciones(b: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[NOTIFICACIONES] = b
+        }
+    }
+
+    suspend fun guardarRecibirTickets(b: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[RECIBIR_TICKETS] = b
+        }
+    }
+
+    suspend fun cerrarSesion() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(PERFIL_ACTIVO)
+            prefs.remove(USUARIO_ID)
+        }
+    }
 }
