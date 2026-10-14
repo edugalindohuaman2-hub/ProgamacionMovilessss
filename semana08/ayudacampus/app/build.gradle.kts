@@ -4,6 +4,10 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+ksp {
+    arg("room.generateKotlin", "true")
+}
+
 android {
     namespace = "com.galindo.ayudacampus"
     compileSdk = 37
