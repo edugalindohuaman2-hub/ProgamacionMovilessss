@@ -14,19 +14,19 @@ import com.galindo.ayudacampus.data.local.entity.Usuario
 
 @Database(
     entities = [
+        Categoria::class,
         Usuario::class,
         Ticket::class,
-        Comentario::class,
-        Categoria::class
+        Comentario::class
     ],
     version = 1,
     exportSchema = false
 )
 abstract class AyudaDatabase : RoomDatabase() {
 
+    abstract fun categoriaDao(): CategoriaDao
     abstract fun usuarioDao(): UsuarioDao
     abstract fun ticketDao(): TicketDao
-    abstract fun categoriaDao(): CategoriaDao
 
     companion object {
         @Volatile
@@ -37,7 +37,7 @@ abstract class AyudaDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AyudaDatabase::class.java,
-                    "ayuda_campus_db"
+                    "ayudacampus.db"
                 ).build()
                 INSTANCE = instance
                 instance
