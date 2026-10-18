@@ -21,6 +21,10 @@ class AyudaRepositoryRoom(
         return usuarioDao.login(correo, clave)
     }
 
+    override suspend fun obtenerUsuarioPorId(id: Int): Usuario? {
+        return usuarioDao.obtenerPorId(id)
+    }
+
     override suspend fun crearTicket(
         clienteId: Int,
         categoriaId: Int,
