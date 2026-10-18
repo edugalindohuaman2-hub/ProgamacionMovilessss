@@ -1,17 +1,23 @@
 package com.galindo.ayudacampus.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.galindo.ayudacampus.AyudaApp
 import com.galindo.ayudacampus.data.model.Rol
 import com.galindo.ayudacampus.data.prefs.PreferenciasStore
 import com.galindo.ayudacampus.ui.cliente.LoginScreen
 import com.galindo.ayudacampus.ui.cliente.MisTicketsScreen
 import com.galindo.ayudacampus.ui.soporte.PanelScreen
 import com.galindo.ayudacampus.ui.splash.SplashScreen
+import com.galindo.ayudacampus.viewmodel.MisTicketsViewModel
 import com.galindo.ayudacampus.viewmodel.SesionViewModel
 
 object NavDestinations {
@@ -19,6 +25,8 @@ object NavDestinations {
     const val LOGIN = "login"
     const val CLIENTE_MAIN = "cliente_main"
     const val SOPORTE_MAIN = "soporte_main"
+    const val NUEVO_TICKET = "nuevo_ticket"
+    const val DETALLE_TICKET = "detalle_ticket"
 }
 
 @Composable
@@ -28,6 +36,9 @@ fun NavAyuda(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
+    val context = LocalContext.current
+    val app = context.applicationContext as AyudaApp
+
     NavHost(
         navController = navController,
         startDestination = NavDestinations.SPLASH,
@@ -71,7 +82,22 @@ fun NavAyuda(
         }
 
         composable(NavDestinations.CLIENTE_MAIN) {
-            MisTicketsScreen()
+            val usuarioActual by sesionViewModel.usuarioActual.collectAsState()
+            val clienteId = usuarioActual?.id ?: 1
+
+            val misTicketsViewModel: MisTicketsViewModel = viewModel(
+                factory = app.misTicketsViewModelFactory(clienteId)
+            )
+
+            MisTicketsScreen(
+                viewModel = misTicketsViewModel,
+                onNuevoTicketClick = {
+                    navController.navigate(NavDestinations.NUEVO_TICKET)
+                },
+                onTicketClick = { ticketId ->
+                    navController.navigate("${NavDestinations.DETALLE_TICKET}/$ticketId")
+                }
+            )
         }
 
         composable(NavDestinations.SOPORTE_MAIN) {
