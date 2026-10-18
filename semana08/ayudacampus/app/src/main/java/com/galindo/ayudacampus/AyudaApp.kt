@@ -67,6 +67,15 @@ class AyudaApp : Application() {
         }
     }
 
+    fun ticketDetalleViewModelFactory(ticketId: Int, clienteId: Int): ViewModelProvider.Factory {
+        return object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return com.galindo.ayudacampus.viewmodel.TicketDetalleViewModel(repository, ticketId, clienteId) as T
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         CoroutineScope(Dispatchers.IO).launch {

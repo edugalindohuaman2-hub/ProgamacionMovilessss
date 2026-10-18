@@ -7,12 +7,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.galindo.ayudacampus.AyudaApp
 import com.galindo.ayudacampus.data.model.Rol
 import com.galindo.ayudacampus.data.prefs.PreferenciasStore
+import com.galindo.ayudacampus.ui.cliente.DetalleTicketScreen
 import com.galindo.ayudacampus.ui.cliente.LoginScreen
 import com.galindo.ayudacampus.ui.cliente.MisTicketsScreen
 import com.galindo.ayudacampus.ui.cliente.NuevoTicketScreen
@@ -21,6 +24,7 @@ import com.galindo.ayudacampus.ui.splash.SplashScreen
 import com.galindo.ayudacampus.viewmodel.MisTicketsViewModel
 import com.galindo.ayudacampus.viewmodel.NuevoTicketViewModel
 import com.galindo.ayudacampus.viewmodel.SesionViewModel
+import com.galindo.ayudacampus.viewmodel.TicketDetalleViewModel
 
 object NavDestinations {
     const val SPLASH = "splash"
@@ -112,6 +116,29 @@ fun NavAyuda(
 
             NuevoTicketScreen(
                 viewModel = nuevoTicketViewModel,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = "${NavDestinations.DETALLE_TICKET}/{ticketId}",
+            arguments = listOf(
+                navArgument("ticketId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val ticketId = backStackEntry.arguments?.getInt("ticketId") ?: 0
+            val usuarioActual by sesionViewModel.usuarioActual.collectAsState()
+            val clienteId = usuarioActual?.id ?: 1
+
+            val ticketDetalleViewModel: TicketDetalleViewModel = viewModel(
+                factory = app.ticketDetalleViewModelFactory(ticketId, clienteId)
+            )
+
+            DetalleTicketScreen(
+                viewModel = ticketDetalleViewModel,
+                clienteId = clienteId,
                 onBack = {
                     navController.popBackStack()
                 }
