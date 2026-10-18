@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,10 +41,12 @@ import java.util.Locale
 fun TicketCard(
     item: TicketConDetalle,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    mostrarCliente: Boolean = true
 ) {
     val ticket = item.ticket
     val categoria = item.categoria
+    val cliente = item.cliente
     val comentarios = item.comentarios
 
     // Formatear Fecha
@@ -148,7 +151,27 @@ fun TicketCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            // Cliente emisor si aplica
+            if (mostrarCliente && cliente.nombre.isNotBlank()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Cliente",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = cliente.nombre,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Título
             Text(
@@ -203,7 +226,7 @@ fun TicketCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // Comentarios
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.Comment,
+                        imageVector = Icons.Default.Comment,
                         contentDescription = "Comentarios",
                         tint = MaterialTheme.colorScheme.outline,
                         modifier = Modifier.size(14.dp)

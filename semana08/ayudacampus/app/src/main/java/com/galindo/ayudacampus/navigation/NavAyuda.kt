@@ -19,10 +19,12 @@ import com.galindo.ayudacampus.ui.cliente.DetalleTicketScreen
 import com.galindo.ayudacampus.ui.cliente.LoginScreen
 import com.galindo.ayudacampus.ui.cliente.MisTicketsScreen
 import com.galindo.ayudacampus.ui.cliente.NuevoTicketScreen
-import com.galindo.ayudacampus.ui.soporte.PanelScreen
+import com.galindo.ayudacampus.ui.soporte.SoporteMainScreen
 import com.galindo.ayudacampus.ui.splash.SplashScreen
+import com.galindo.ayudacampus.viewmodel.BandejaViewModel
 import com.galindo.ayudacampus.viewmodel.MisTicketsViewModel
 import com.galindo.ayudacampus.viewmodel.NuevoTicketViewModel
+import com.galindo.ayudacampus.viewmodel.PanelViewModel
 import com.galindo.ayudacampus.viewmodel.SesionViewModel
 import com.galindo.ayudacampus.viewmodel.TicketDetalleViewModel
 
@@ -146,7 +148,16 @@ fun NavAyuda(
         }
 
         composable(NavDestinations.SOPORTE_MAIN) {
-            PanelScreen()
+            val panelViewModel: PanelViewModel = viewModel(factory = app.panelViewModelFactory)
+            val bandejaViewModel: BandejaViewModel = viewModel(factory = app.bandejaViewModelFactory)
+
+            SoporteMainScreen(
+                panelViewModel = panelViewModel,
+                bandejaViewModel = bandejaViewModel,
+                onTicketClick = { ticketId ->
+                    navController.navigate("${NavDestinations.DETALLE_TICKET}/$ticketId")
+                }
+            )
         }
     }
 }

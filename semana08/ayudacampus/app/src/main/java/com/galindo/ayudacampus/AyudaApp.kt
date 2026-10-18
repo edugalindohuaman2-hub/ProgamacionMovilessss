@@ -17,6 +17,8 @@ import com.galindo.ayudacampus.data.repository.AyudaRepository
 import com.galindo.ayudacampus.data.repository.AyudaRepositoryRoom
 import com.galindo.ayudacampus.navigation.NavAyuda
 import com.galindo.ayudacampus.ui.theme.AyudacampusTheme
+import com.galindo.ayudacampus.viewmodel.BandejaViewModel
+import com.galindo.ayudacampus.viewmodel.PanelViewModel
 import com.galindo.ayudacampus.viewmodel.SesionViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +47,24 @@ class AyudaApp : Application() {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return SesionViewModel(repository, preferenciasStore) as T
+            }
+        }
+    }
+
+    val panelViewModelFactory: ViewModelProvider.Factory by lazy {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return PanelViewModel(repository) as T
+            }
+        }
+    }
+
+    val bandejaViewModelFactory: ViewModelProvider.Factory by lazy {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return BandejaViewModel(repository) as T
             }
         }
     }
