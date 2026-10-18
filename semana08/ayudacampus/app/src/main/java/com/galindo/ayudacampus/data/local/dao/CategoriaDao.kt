@@ -18,6 +18,9 @@ interface CategoriaDao {
     @Query("SELECT * FROM categorias ORDER BY nombre ASC")
     fun observarTodas(): Flow<List<Categoria>>
 
+    @Query("SELECT * FROM categorias ORDER BY nombre ASC")
+    fun observarCategoriasActivas(): Flow<List<Categoria>>
+
     @Query("SELECT COUNT(*) FROM categorias")
     suspend fun contar(): Int
 }

@@ -79,6 +79,10 @@ class AyudaRepositoryRoom(
         return categoriaDao.observarTodas()
     }
 
+    override fun observarCategoriasActivas(): Flow<List<Categoria>> {
+        return categoriaDao.observarCategoriasActivas()
+    }
+
     override fun observarTicketsPorCliente(clienteId: Int): Flow<List<TicketConDetalle>> {
         return ticketDao.observarPorCliente(clienteId)
     }

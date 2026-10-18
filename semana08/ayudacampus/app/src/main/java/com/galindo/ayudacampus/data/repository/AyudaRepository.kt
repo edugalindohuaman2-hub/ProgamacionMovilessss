@@ -32,6 +32,8 @@ interface AyudaRepository {
 
     fun observarCategorias(): Flow<List<Categoria>>
 
+    fun observarCategoriasActivas(): Flow<List<Categoria>>
+
     fun observarTicketsPorCliente(clienteId: Int): Flow<List<TicketConDetalle>>
 
     fun observarTodosLosTickets(): Flow<List<TicketConDetalle>>

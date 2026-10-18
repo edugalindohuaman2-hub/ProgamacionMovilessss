@@ -15,9 +15,11 @@ import com.galindo.ayudacampus.data.model.Rol
 import com.galindo.ayudacampus.data.prefs.PreferenciasStore
 import com.galindo.ayudacampus.ui.cliente.LoginScreen
 import com.galindo.ayudacampus.ui.cliente.MisTicketsScreen
+import com.galindo.ayudacampus.ui.cliente.NuevoTicketScreen
 import com.galindo.ayudacampus.ui.soporte.PanelScreen
 import com.galindo.ayudacampus.ui.splash.SplashScreen
 import com.galindo.ayudacampus.viewmodel.MisTicketsViewModel
+import com.galindo.ayudacampus.viewmodel.NuevoTicketViewModel
 import com.galindo.ayudacampus.viewmodel.SesionViewModel
 
 object NavDestinations {
@@ -96,6 +98,22 @@ fun NavAyuda(
                 },
                 onTicketClick = { ticketId ->
                     navController.navigate("${NavDestinations.DETALLE_TICKET}/$ticketId")
+                }
+            )
+        }
+
+        composable(NavDestinations.NUEVO_TICKET) {
+            val usuarioActual by sesionViewModel.usuarioActual.collectAsState()
+            val clienteId = usuarioActual?.id ?: 1
+
+            val nuevoTicketViewModel: NuevoTicketViewModel = viewModel(
+                factory = app.nuevoTicketViewModelFactory(clienteId)
+            )
+
+            NuevoTicketScreen(
+                viewModel = nuevoTicketViewModel,
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }
