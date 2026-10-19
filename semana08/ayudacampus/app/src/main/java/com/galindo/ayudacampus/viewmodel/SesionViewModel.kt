@@ -3,13 +3,17 @@ package com.galindo.ayudacampus.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.galindo.ayudacampus.data.local.entity.Usuario
+import com.galindo.ayudacampus.data.local.relation.TicketConDetalle
 import com.galindo.ayudacampus.data.model.Rol
 import com.galindo.ayudacampus.data.prefs.PreferenciasStore
 import com.galindo.ayudacampus.data.repository.AyudaRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -28,6 +32,31 @@ class SesionViewModel(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = false
+    )
+
+    val notificaciones: StateFlow<Boolean> = preferenciasStore.notificaciones.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    val recibirTickets: StateFlow<Boolean> = preferenciasStore.recibirTickets.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = true
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val misTicketsEstudiante: StateFlow<List<TicketConDetalle>> = _usuarioActual.flatMapLatest { usuario ->
+        if (usuario != null) {
+            repository.observarTicketsPorCliente(usuario.id)
+        } else {
+            flowOf(emptyList())
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
     )
 
     init {
@@ -85,6 +114,39 @@ class SesionViewModel(
     fun toggleModoOscuro(activo: Boolean) {
         viewModelScope.launch {
             preferenciasStore.guardarModoOscuro(activo)
+        }
+    }
+
+    fun toggleNotificaciones(activo: Boolean) {
+        viewModelScope.launch {
+            preferenciasStore.guardarNotificaciones(activo)
+        }
+    }
+
+    fun toggleRecibirTickets(activo: Boolean) {
+        viewModelScope.launch {
+            preferenciasStore.guardarRecibirTickets(activo)
+        }
+    }
+
+    fun cambiarPerfilPractica(onSuccess: (Rol) -> Unit) {
+        viewModelScope.launch {
+            val usuarioActualVal = _usuarioActual.value
+            val esActualmenteAdmin = usuarioActualVal?.rol.equals(Rol.ADMIN.name, ignoreCase = true)
+            val rolObjetivo = if (esActualmenteAdmin) Rol.CLIENTE else Rol.ADMIN
+
+            var usuarioObjetivo = repository.obtenerUsuarioPorRol(rolObjetivo.name)
+            if (usuarioObjetivo == null) {
+                val correo = if (rolObjetivo == Rol.ADMIN) "soporte@campus.test" else "juan@campus.test"
+                val clave = if (rolObjetivo == Rol.ADMIN) "admin" else "1234"
+                usuarioObjetivo = repository.login(correo, clave)
+            }
+
+            if (usuarioObjetivo != null) {
+                _usuarioActual.value = usuarioObjetivo
+                preferenciasStore.guardarSesion(usuarioObjetivo.rol, usuarioObjetivo.id)
+                onSuccess(rolObjetivo)
+            }
         }
     }
 }

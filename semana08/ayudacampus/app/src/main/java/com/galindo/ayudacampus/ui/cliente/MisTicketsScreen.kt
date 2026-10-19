@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ConfirmationNumber
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -41,7 +43,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.galindo.ayudacampus.ui.components.TicketCard
 import com.galindo.ayudacampus.viewmodel.FiltroTicket
 import com.galindo.ayudacampus.viewmodel.MisTicketsViewModel
@@ -50,9 +51,10 @@ import com.galindo.ayudacampus.viewmodel.MisTicketsViewModel
 @Composable
 fun MisTicketsScreen(
     viewModel: MisTicketsViewModel,
+    modifier: Modifier = Modifier,
+    recibirTickets: Boolean = true,
     onNuevoTicketClick: () -> Unit = {},
-    onTicketClick: (Int) -> Unit = {},
-    modifier: Modifier = Modifier
+    onTicketClick: (Int) -> Unit = {}
 ) {
     val tickets by viewModel.tickets.collectAsState()
     val filtroSeleccionado by viewModel.filtroSeleccionado.collectAsState()
@@ -62,15 +64,17 @@ fun MisTicketsScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onNuevoTicketClick,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Nuevo Ticket"
-                )
+            if (recibirTickets) {
+                FloatingActionButton(
+                    onClick = onNuevoTicketClick,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Nuevo Ticket"
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -81,6 +85,46 @@ fun MisTicketsScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Banner Mesa de ayuda cerrada
+            if (!recibirTickets) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Mesa de ayuda cerrada",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Mesa de ayuda cerrada",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = "Soporte TI ha desactivado la recepción de nuevas incidencias temporalmente.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.9f)
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
 
             // Saludo inicial e indicador de tickets abiertos
             Card(

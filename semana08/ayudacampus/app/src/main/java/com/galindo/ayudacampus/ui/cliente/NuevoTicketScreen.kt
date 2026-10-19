@@ -10,23 +10,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Title
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -55,7 +58,8 @@ import com.galindo.ayudacampus.viewmodel.NuevoTicketViewModel
 fun NuevoTicketScreen(
     viewModel: NuevoTicketViewModel,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    recibirTickets: Boolean = true
 ) {
     val categoriasActivas by viewModel.categoriasActivas.collectAsState()
     val categoriaSeleccionada by viewModel.categoriaSeleccionada.collectAsState()
@@ -99,6 +103,45 @@ fun NuevoTicketScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Alerta si Mesa de ayuda está cerrada
+            if (!recibirTickets) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Mesa de ayuda cerrada",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(28.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Mesa de ayuda cerrada",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = "Soporte TI ha desactivado temporalmente el registro de nuevos tickets.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.9f)
+                            )
+                        }
+                    }
+                }
+            }
+
             // 1. Selector visual de Categorías
             Column {
                 Text(
@@ -119,6 +162,7 @@ fun NuevoTicketScreen(
                         val selected = (categoriaSeleccionada?.id == cat.id)
                         FilterChip(
                             selected = selected,
+                            enabled = recibirTickets,
                             onClick = { viewModel.onCategoriaSeleccionada(cat) },
                             label = { Text(cat.nombre) },
                             leadingIcon = {
@@ -154,6 +198,7 @@ fun NuevoTicketScreen(
                     onValueChange = viewModel::onTituloCambiado,
                     label = "Título de la incidencia",
                     modifier = Modifier.fillMaxWidth(),
+                    enabled = recibirTickets,
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Title,
@@ -180,6 +225,7 @@ fun NuevoTicketScreen(
                     onValueChange = viewModel::onUbicacionCambiada,
                     label = "Ubicación (Aula / Lab / Pabellón)",
                     modifier = Modifier.fillMaxWidth(),
+                    enabled = recibirTickets,
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.LocationOn,
@@ -223,6 +269,7 @@ fun NuevoTicketScreen(
 
                         FilterChip(
                             selected = selected,
+                            enabled = recibirTickets,
                             onClick = { viewModel.onPrioridadCambiada(p) },
                             label = { Text(etiqueta) },
                             colors = FilterChipDefaults.filterChipColors(
@@ -241,6 +288,7 @@ fun NuevoTicketScreen(
                     onValueChange = viewModel::onDescripcionCambiada,
                     label = "Descripción detallada del problema",
                     modifier = Modifier.fillMaxWidth(),
+                    enabled = recibirTickets,
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Description,
@@ -268,7 +316,7 @@ fun NuevoTicketScreen(
                 onClick = {
                     viewModel.enviar(onSuccess = onBack)
                 },
-                enabled = !isEnviando,
+                enabled = !isEnviando && recibirTickets,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -285,13 +333,13 @@ fun NuevoTicketScreen(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Send,
+                            imageVector = if (recibirTickets) Icons.Default.Send else Icons.Default.Lock,
                             contentDescription = null,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.size(8.dp))
                         Text(
-                            text = "Enviar ticket",
+                            text = if (recibirTickets) "Enviar ticket" else "Mesa de ayuda cerrada",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )

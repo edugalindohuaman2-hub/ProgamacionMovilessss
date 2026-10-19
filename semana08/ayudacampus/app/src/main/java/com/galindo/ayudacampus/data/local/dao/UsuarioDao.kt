@@ -15,6 +15,9 @@ interface UsuarioDao {
     @Query("SELECT * FROM usuarios WHERE id = :id LIMIT 1")
     suspend fun obtenerPorId(id: Int): Usuario?
 
+    @Query("SELECT * FROM usuarios WHERE UPPER(rol) = UPPER(:rol) LIMIT 1")
+    suspend fun obtenerPorRol(rol: String): Usuario?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarTodos(lista: List<Usuario>): List<Long>
 

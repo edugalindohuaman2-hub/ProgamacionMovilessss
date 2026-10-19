@@ -25,6 +25,10 @@ class AyudaRepositoryRoom(
         return usuarioDao.obtenerPorId(id)
     }
 
+    override suspend fun obtenerUsuarioPorRol(rol: String): Usuario? {
+        return usuarioDao.obtenerPorRol(rol)
+    }
+
     override suspend fun crearTicket(
         clienteId: Int,
         categoriaId: Int,

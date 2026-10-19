@@ -11,6 +11,8 @@ interface AyudaRepository {
 
     suspend fun obtenerUsuarioPorId(id: Int): Usuario?
 
+    suspend fun obtenerUsuarioPorRol(rol: String): Usuario?
+
     suspend fun crearTicket(
         clienteId: Int,
         categoriaId: Int,

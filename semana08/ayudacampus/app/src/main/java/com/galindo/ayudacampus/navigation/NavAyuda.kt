@@ -68,8 +68,6 @@ object Rutas {
     const val ATENDER_TICKET = "atender_ticket"
 }
 
-
-
 private data class ItemNavegacion(
     val titulo: String,
     val ruta: String,
@@ -87,6 +85,8 @@ fun NavAyuda(
     val app = context.applicationContext as AyudaApp
 
     val usuarioActual by sesionViewModel.usuarioActual.collectAsState()
+    val recibirTickets by sesionViewModel.recibirTickets.collectAsState()
+
     val rolActivo = usuarioActual?.rol?.let {
         runCatching { Rol.valueOf(it.uppercase()) }.getOrNull()
     }
@@ -194,6 +194,7 @@ fun NavAyuda(
 
                 MisTicketsScreen(
                     viewModel = misTicketsViewModel,
+                    recibirTickets = recibirTickets,
                     onNuevoTicketClick = {
                         navController.navigate(Rutas.NUEVO_TICKET)
                     },
@@ -211,6 +212,7 @@ fun NavAyuda(
 
                 NuevoTicketScreen(
                     viewModel = nuevoTicketViewModel,
+                    recibirTickets = recibirTickets,
                     onBack = {
                         navController.popBackStack()
                     }
@@ -220,6 +222,12 @@ fun NavAyuda(
             composable(Rutas.PERFIL) {
                 PerfilScreen(
                     viewModel = sesionViewModel,
+                    onCambiarPerfil = { nuevoRol ->
+                        val destino = if (nuevoRol == Rol.ADMIN) Rutas.PANEL else Rutas.MIS_TICKETS
+                        navController.navigate(destino) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
                     onCerrarSesion = {
                         navController.navigate(Rutas.LOGIN) {
                             popUpTo(0) { inclusive = true }
@@ -269,6 +277,12 @@ fun NavAyuda(
             composable(Rutas.AJUSTES) {
                 AjustesScreen(
                     viewModel = sesionViewModel,
+                    onCambiarPerfil = { nuevoRol ->
+                        val destino = if (nuevoRol == Rol.ADMIN) Rutas.PANEL else Rutas.MIS_TICKETS
+                        navController.navigate(destino) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
                     onCerrarSesion = {
                         navController.navigate(Rutas.LOGIN) {
                             popUpTo(0) { inclusive = true }
