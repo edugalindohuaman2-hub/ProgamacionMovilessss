@@ -45,4 +45,10 @@ interface AyudaRepository {
     fun contarTicketsPorCategoria(): Flow<List<ConteoCategoria>>
 
     fun contarAltasSinAtender(limite: Long): Flow<Int>
+
+    suspend fun guardarCategoria(categoria: Categoria): Long
+
+    suspend fun eliminarCategoria(categoria: Categoria): Int
+
+    suspend fun contarTicketsPorCategoriaId(categoriaId: Int): Int
 }

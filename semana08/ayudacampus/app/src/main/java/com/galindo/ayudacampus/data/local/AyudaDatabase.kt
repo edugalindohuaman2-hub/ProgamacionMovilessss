@@ -17,10 +17,10 @@ import com.galindo.ayudacampus.data.local.entity.Usuario
         Categoria::class,
         Usuario::class,
         Ticket::class,
-        Comentario::class
+        Comentario::class,
     ],
-    version = 1,
-    exportSchema = false
+    version = 2,
+    exportSchema = false,
 )
 abstract class AyudaDatabase : RoomDatabase() {
 
@@ -37,8 +37,8 @@ abstract class AyudaDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AyudaDatabase::class.java,
-                    "ayudacampus.db"
-                ).build()
+                    "ayudacampus.db",
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }

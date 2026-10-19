@@ -8,5 +8,7 @@ data class Categoria(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val nombre: String,
-    val descripcion: String = ""
+    val descripcion: String = "",
+    val icono: String = "tag",
+    val activa: Boolean = true
 )

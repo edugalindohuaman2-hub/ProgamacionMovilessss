@@ -73,10 +73,12 @@ class SesionViewModel(
         _error.value = null
     }
 
-    fun cerrarSesion() {
+    fun cerrarSesion(onComplete: () -> Unit = {}) {
+        _usuarioActual.value = null
+        _error.value = null
         viewModelScope.launch {
             preferenciasStore.cerrarSesion()
-            _usuarioActual.value = null
+            onComplete()
         }
     }
 

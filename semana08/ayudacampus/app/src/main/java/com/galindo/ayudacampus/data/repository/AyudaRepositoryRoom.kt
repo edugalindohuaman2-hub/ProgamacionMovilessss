@@ -106,4 +106,16 @@ class AyudaRepositoryRoom(
     override fun contarAltasSinAtender(limite: Long): Flow<Int> {
         return ticketDao.contarAltasSinAtender(limite)
     }
+
+    override suspend fun guardarCategoria(categoria: Categoria): Long {
+        return categoriaDao.insertar(categoria)
+    }
+
+    override suspend fun eliminarCategoria(categoria: Categoria): Int {
+        return categoriaDao.eliminar(categoria)
+    }
+
+    override suspend fun contarTicketsPorCategoriaId(categoriaId: Int): Int {
+        return ticketDao.contarPorCategoriaId(categoriaId)
+    }
 }

@@ -3,6 +3,7 @@ package com.galindo.ayudacampus.ui.soporte
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material3.Icon
@@ -17,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.galindo.ayudacampus.viewmodel.BandejaViewModel
+import com.galindo.ayudacampus.viewmodel.CategoriasViewModel
 import com.galindo.ayudacampus.viewmodel.FiltroEstadoBandeja
 import com.galindo.ayudacampus.viewmodel.PanelViewModel
 
@@ -24,6 +26,7 @@ import com.galindo.ayudacampus.viewmodel.PanelViewModel
 fun SoporteMainScreen(
     panelViewModel: PanelViewModel,
     bandejaViewModel: BandejaViewModel,
+    categoriasViewModel: CategoriasViewModel,
     modifier: Modifier = Modifier,
     onTicketClick: (Int) -> Unit = {}
 ) {
@@ -56,6 +59,18 @@ fun SoporteMainScreen(
                     },
                     label = { Text("Bandeja") }
                 )
+
+                NavigationBarItem(
+                    selected = (pestanaSeleccionada == 2),
+                    onClick = { pestanaSeleccionada = 2 },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Category,
+                            contentDescription = "Categorías"
+                        )
+                    },
+                    label = { Text("Categorías") }
+                )
             }
         }
     ) { innerPadding ->
@@ -71,6 +86,10 @@ fun SoporteMainScreen(
             1 -> BandejaScreen(
                 viewModel = bandejaViewModel,
                 onTicketClick = onTicketClick,
+                modifier = Modifier.padding(innerPadding)
+            )
+            2 -> FormularioCategoriaScreen(
+                viewModel = categoriasViewModel,
                 modifier = Modifier.padding(innerPadding)
             )
         }

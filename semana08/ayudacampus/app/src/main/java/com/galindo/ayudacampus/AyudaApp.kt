@@ -69,6 +69,24 @@ class AyudaApp : Application() {
         }
     }
 
+    val categoriasViewModelFactory: ViewModelProvider.Factory by lazy {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return com.galindo.ayudacampus.viewmodel.CategoriasViewModel(repository) as T
+            }
+        }
+    }
+
+    fun atenderViewModelFactory(ticketId: Int, soporteUsuarioId: Int): ViewModelProvider.Factory {
+        return object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return com.galindo.ayudacampus.viewmodel.AtenderViewModel(repository, ticketId, soporteUsuarioId) as T
+            }
+        }
+    }
+
     fun misTicketsViewModelFactory(clienteId: Int): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
