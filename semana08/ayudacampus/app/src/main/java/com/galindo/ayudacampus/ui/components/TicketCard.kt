@@ -116,7 +116,28 @@ fun TicketCard(
                     }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // Badge SLA
+                    val sla = calcularSLA(ticket.prioridad, ticket.fecha, ticket.estado)
+                    if (sla != null) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(sla.backgroundColor)
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = sla.texto,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = sla.textColor
+                            )
+                        }
+                    }
+
                     // Chip Prioridad
                     Box(
                         modifier = Modifier
@@ -131,8 +152,6 @@ fun TicketCard(
                             color = prioridadText
                         )
                     }
-
-                    Spacer(modifier = Modifier.width(6.dp))
 
                     // Chip Estado
                     Box(
@@ -262,4 +281,49 @@ fun TicketCard(
 private fun rememberFechaFormateada(timestamp: Long): String {
     val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
     return sdf.format(Date(timestamp))
+}
+
+data class EstadoSLA(
+    val texto: String,
+    val backgroundColor: Color,
+    val textColor: Color
+)
+
+fun calcularSLA(prioridad: String, fechaCreacion: Long, estadoTicket: String): EstadoSLA? {
+    val estadoUpper = estadoTicket.uppercase()
+    if (estadoUpper == "CERRADO" || estadoUpper == "CANCELADO" || estadoUpper == "RESUELTO") {
+        return null
+    }
+
+    val limiteHorasMs = when (prioridad.uppercase()) {
+        "ALTA" -> 4 * 3_600_000L
+        "MEDIA" -> 24 * 3_600_000L
+        else -> 72 * 3_600_000L
+    }
+
+    val tiempoTranscurrido = System.currentTimeMillis() - fechaCreacion
+    val tiempoRestanteMs = limiteHorasMs - tiempoTranscurrido
+
+    return if (tiempoRestanteMs <= 0) {
+        EstadoSLA(
+            texto = "SLA Vencido",
+            backgroundColor = Color(0xFFFFEBEE),
+            textColor = Color(0xFFD32F2F)
+        )
+    } else if (tiempoRestanteMs < 3_600_000L) {
+        val minutosRestantes = tiempoRestanteMs / (1000 * 60)
+        EstadoSLA(
+            texto = "SLA: ${minutosRestantes}m",
+            backgroundColor = Color(0xFFFFF3E0),
+            textColor = Color(0xFFE65100)
+        )
+    } else {
+        val horasRestantes = tiempoRestanteMs / 3_600_000L
+        val minsRestantes = (tiempoRestanteMs % 3_600_000L) / 60_000L
+        EstadoSLA(
+            texto = "SLA: ${horasRestantes}h ${minsRestantes}m",
+            backgroundColor = Color(0xFFE8F5E9),
+            textColor = Color(0xFF1B5E20)
+        )
+    }
 }
