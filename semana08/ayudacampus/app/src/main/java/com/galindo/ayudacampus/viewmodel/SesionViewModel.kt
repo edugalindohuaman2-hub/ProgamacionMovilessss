@@ -1,5 +1,6 @@
 package com.galindo.ayudacampus.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.galindo.ayudacampus.data.local.entity.Usuario
@@ -95,6 +96,15 @@ class SesionViewModel(
             _usuarioActual.value = usuario
             _error.value = null
             preferenciasStore.guardarSesion(usuario.rol, usuario.id)
+        }
+    }
+
+    fun actualizarFoto(uri: Uri) {
+        val usuario = _usuarioActual.value ?: return
+        val uriString = uri.toString()
+        viewModelScope.launch {
+            repository.actualizarFotoPerfil(usuario.id, uriString)
+            _usuarioActual.value = usuario.copy(fotoUri = uriString)
         }
     }
 

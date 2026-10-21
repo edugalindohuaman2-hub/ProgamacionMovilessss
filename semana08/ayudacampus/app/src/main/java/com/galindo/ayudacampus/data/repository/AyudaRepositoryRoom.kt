@@ -126,4 +126,8 @@ class AyudaRepositoryRoom(
     override fun obtenerTiempoPromedioResolucion(): Flow<Double?> {
         return ticketDao.obtenerTiempoPromedioResolucion()
     }
+
+    override suspend fun actualizarFotoPerfil(usuarioId: Int, fotoUri: String) {
+        usuarioDao.actualizarFotoPerfil(usuarioId, fotoUri)
+    }
 }
