@@ -126,8 +126,13 @@ class AyudaApp : Application() {
 fun AyudaApp.AppContent() {
     val sesionViewModel: SesionViewModel = viewModel(factory = sesionViewModelFactory)
     val modoOscuro by sesionViewModel.modoOscuro.collectAsState()
+    val usuarioActual by sesionViewModel.usuarioActual.collectAsState()
 
-    AyudacampusTheme(darkTheme = modoOscuro) {
+    val rolActivo = usuarioActual?.rol?.let {
+        runCatching { com.galindo.ayudacampus.data.model.Rol.valueOf(it.uppercase()) }.getOrNull()
+    }
+
+    com.galindo.ayudacampus.ui.theme.AyudaTheme(rol = rolActivo, darkTheme = modoOscuro) {
         Surface(modifier = Modifier.fillMaxSize()) {
             NavAyuda(
                 sesionViewModel = sesionViewModel,
