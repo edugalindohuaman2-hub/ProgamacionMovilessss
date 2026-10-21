@@ -11,5 +11,6 @@ data class Usuario(
     val nombre: String,
     val correo: String,
     val clave: String,
-    val rol: String = Rol.CLIENTE.name
+    val rol: String = Rol.CLIENTE.name,
+    val fotoUri: String? = null
 )

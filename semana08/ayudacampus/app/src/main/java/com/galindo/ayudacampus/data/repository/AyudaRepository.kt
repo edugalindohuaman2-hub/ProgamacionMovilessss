@@ -55,4 +55,6 @@ interface AyudaRepository {
     suspend fun contarTicketsPorCategoriaId(categoriaId: Int): Int
 
     fun obtenerTiempoPromedioResolucion(): Flow<Double?>
+
+    suspend fun actualizarFotoPerfil(usuarioId: Int, fotoUri: String)
 }

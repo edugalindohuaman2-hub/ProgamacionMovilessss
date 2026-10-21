@@ -23,4 +23,7 @@ interface UsuarioDao {
 
     @Query("SELECT COUNT(*) FROM usuarios")
     suspend fun contar(): Int
+
+    @Query("UPDATE usuarios SET fotoUri = :fotoUri WHERE id = :id")
+    suspend fun actualizarFotoPerfil(id: Int, fotoUri: String): Int
 }

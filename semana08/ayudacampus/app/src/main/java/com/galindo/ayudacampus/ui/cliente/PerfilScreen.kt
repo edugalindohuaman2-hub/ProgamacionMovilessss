@@ -1,6 +1,13 @@
 package com.galindo.ayudacampus.ui.cliente
 
+import android.graphics.BitmapFactory
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,28 +23,35 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +69,15 @@ fun PerfilScreen(
 ) {
     val usuario by viewModel.usuarioActual.collectAsState()
     val misTickets by viewModel.misTicketsEstudiante.collectAsState()
+
+    // Launcher para seleccionar foto desde la galería
+    val launcherFoto = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.actualizarFoto(it) }
+    }
+
+    val bitmapFoto = rememberBitmapFromUri(usuario?.fotoUri)
 
     val totalTickets = misTickets.size
     val ticketsAbiertos = misTickets.count {
@@ -85,52 +108,86 @@ fun PerfilScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Surface(
-                modifier = Modifier.size(96.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer
+            // Avatar Circular Interactivo con selector de foto
+            Box(
+                modifier = Modifier.size(110.dp),
+                contentAlignment = Alignment.BottomEnd
             ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Avatar",
-                    tint = MaterialTheme.colorScheme.primary,
+                Box(
                     modifier = Modifier
-                        .padding(20.dp)
                         .fillMaxSize()
-                )
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (bitmapFoto != null) {
+                        Image(
+                            bitmap = bitmapFoto,
+                            contentDescription = "Foto de Perfil",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Avatar Por Defecto",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(56.dp)
+                        )
+                    }
+                }
+
+                // Botón de Edición flotante sobre el avatar
+                IconButton(
+                    onClick = { launcherFoto.launch("image/*") },
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Cambiar foto de perfil",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = usuario?.nombre ?: "Estudiante",
+                    text = usuario?.nombre ?: "Usuario del Campus",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = "Estudiante del Campus",
+                    text = if (usuario?.rol.equals("ADMIN", ignoreCase = true)) "Soporte TI Especializado" else "Estudiante del Campus",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.outline
                 )
             }
 
-            // Datos del estudiante
-            Card(
+            // 1. Tarjeta Elevada: Datos de Usuario
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Text(
-                        text = "Datos del Usuario",
+                        text = "Información Personal",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -141,9 +198,9 @@ fun PerfilScreen(
                             imageVector = Icons.Default.Email,
                             contentDescription = "Correo",
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(22.dp)
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(14.dp))
                         Column {
                             Text(
                                 text = "Correo institucional",
@@ -153,7 +210,8 @@ fun PerfilScreen(
                             Text(
                                 text = usuario?.correo ?: "juan@campus.test",
                                 style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -163,49 +221,52 @@ fun PerfilScreen(
                             imageVector = Icons.Default.Shield,
                             contentDescription = "Rol",
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(22.dp)
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(14.dp))
                         Column {
                             Text(
-                                text = "Rol en el sistema",
+                                text = "Rol asignado",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.outline
                             )
                             Text(
                                 text = if (usuario?.rol.equals("ADMIN", ignoreCase = true)) "Soporte TI" else "Estudiante",
                                 style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
                 }
             }
 
-            // Contadores de Tickets del Estudiante
-            Card(
+            // 2. Tarjeta Elevada: Resumen de Métricas
+            ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(18.dp)
                 ) {
                     Text(
-                        text = "Resumen de Mis Solicitudes",
+                        text = "Resumen de Solicitudes",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        TarjetaContadorPerfil(
+                        TarjetaMetrica(
                             titulo = "Totales",
                             valor = totalTickets,
                             colorFondo = Color(0xFFF5F5F5),
@@ -213,7 +274,7 @@ fun PerfilScreen(
                             modifier = Modifier.weight(1f)
                         )
 
-                        TarjetaContadorPerfil(
+                        TarjetaMetrica(
                             titulo = "Abiertos",
                             valor = ticketsAbiertos,
                             colorFondo = Color(0xFFE3F2FD),
@@ -221,7 +282,7 @@ fun PerfilScreen(
                             modifier = Modifier.weight(1f)
                         )
 
-                        TarjetaContadorPerfil(
+                        TarjetaMetrica(
                             titulo = "Resueltos",
                             valor = ticketsResueltos,
                             colorFondo = Color(0xFFE8F5E9),
@@ -232,7 +293,7 @@ fun PerfilScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Botón "Cambiar de perfil" (Modo práctica)
             OutlinedButton(
@@ -243,8 +304,8 @@ fun PerfilScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(8.dp)
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.SwapHoriz,
@@ -266,9 +327,9 @@ fun PerfilScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
+                    .height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ExitToApp,
@@ -277,22 +338,45 @@ fun PerfilScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Cerrar Sesión", fontWeight = FontWeight.Bold)
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-private fun TarjetaContadorPerfil(
+private fun rememberBitmapFromUri(uriString: String?): ImageBitmap? {
+    val context = LocalContext.current
+    return remember(uriString) {
+        if (uriString.isNullOrEmpty()) {
+            null
+        } else {
+            try {
+                val uri = Uri.parse(uriString)
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val bitmap = BitmapFactory.decodeStream(inputStream)
+                inputStream?.close()
+                bitmap?.asImageBitmap()
+            } catch (_: Exception) {
+                null
+            }
+        }
+    }
+}
+
+@Composable
+private fun TarjetaMetrica(
     titulo: String,
     valor: Int,
     colorFondo: Color,
     colorTexto: Color,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    ElevatedCard(
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = colorFondo)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.elevatedCardColors(containerColor = colorFondo),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier
