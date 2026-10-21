@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -51,6 +52,7 @@ fun PanelScreen(
     val altasSinAtender by viewModel.altasSinAtender.collectAsState()
     val graficoPorEstado by viewModel.graficoPorEstado.collectAsState()
     val graficoPorCategoria by viewModel.graficoPorCategoria.collectAsState()
+    val tiempoPromedioResolucion by viewModel.tiempoPromedioResolucion.collectAsState()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -160,6 +162,46 @@ fun PanelScreen(
                     colorTexto = Color(0xFF1B5E20),
                     modifier = Modifier.weight(1f)
                 )
+            }
+
+            // 2.5 Tarjeta de Tiempo Promedio de Resolución
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = "Tiempo promedio de resolución",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Tiempo Promedio de Resolución",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = tiempoPromedioResolucion,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
 
             // 3. Gráfico por Estado (Dona)

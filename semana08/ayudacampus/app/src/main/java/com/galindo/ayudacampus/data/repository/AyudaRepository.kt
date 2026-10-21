@@ -53,4 +53,6 @@ interface AyudaRepository {
     suspend fun eliminarCategoria(categoria: Categoria): Int
 
     suspend fun contarTicketsPorCategoriaId(categoriaId: Int): Int
+
+    fun obtenerTiempoPromedioResolucion(): Flow<Double?>
 }

@@ -122,4 +122,8 @@ class AyudaRepositoryRoom(
     override suspend fun contarTicketsPorCategoriaId(categoriaId: Int): Int {
         return ticketDao.contarPorCategoriaId(categoriaId)
     }
+
+    override fun obtenerTiempoPromedioResolucion(): Flow<Double?> {
+        return ticketDao.obtenerTiempoPromedioResolucion()
+    }
 }
