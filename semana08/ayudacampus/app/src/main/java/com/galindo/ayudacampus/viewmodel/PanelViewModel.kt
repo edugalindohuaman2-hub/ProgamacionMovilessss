@@ -118,4 +118,32 @@ class PanelViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    // Tiempo promedio de resolución de tickets cerrados
+    val tiempoPromedioResolucion: StateFlow<String> = repository.obtenerTiempoPromedioResolucion()
+        .map { promedioMs ->
+            formatearTiempoPromedio(promedioMs)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = "Sin datos"
+        )
+
+    private fun formatearTiempoPromedio(promedioMs: Double?): String {
+        if (promedioMs == null || promedioMs <= 0) return "Sin datos"
+        val totalSegundos = (promedioMs / 1000).toLong()
+        if (totalSegundos < 60) return "< 1 min"
+
+        val totalMinutos = totalSegundos / 60
+        val dias = totalMinutos / (24 * 60)
+        val horas = (totalMinutos % (24 * 60)) / 60
+        val minutos = totalMinutos % 60
+
+        return when {
+            dias > 0 -> "${dias}d ${horas}h ${minutos}m"
+            horas > 0 -> "${horas}h ${minutos}m"
+            else -> "$minutos min"
+        }
+    }
 }
