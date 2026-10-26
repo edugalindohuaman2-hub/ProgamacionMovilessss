@@ -78,6 +78,15 @@ class AyudaApp : Application() {
         }
     }
 
+    val registroViewModelFactory: ViewModelProvider.Factory by lazy {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return com.galindo.ayudacampus.viewmodel.RegistroViewModel(repository) as T
+            }
+        }
+    }
+
     fun atenderViewModelFactory(ticketId: Int, soporteUsuarioId: Int): ViewModelProvider.Factory {
         return object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")

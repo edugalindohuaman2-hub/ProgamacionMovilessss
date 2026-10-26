@@ -21,6 +21,27 @@ class AyudaRepositoryRoom(
         return usuarioDao.login(correo, clave)
     }
 
+    override suspend fun registrarEstudiante(nombre: String, correo: String, clave: String): Result<Unit> {
+        val correoNormalizado = correo.trim().lowercase()
+        val existeUsuario = usuarioDao.buscarPorCorreo(correoNormalizado)
+        if (existeUsuario != null) {
+            return Result.failure(Exception("El correo ya se encuentra registrado."))
+        }
+
+        val nuevoUsuario = Usuario(
+            nombre = nombre.trim(),
+            correo = correoNormalizado,
+            clave = clave.trim(),
+            rol = com.galindo.ayudacampus.data.model.Rol.CLIENTE.name
+        )
+        val id = usuarioDao.insertarUsuario(nuevoUsuario)
+        return if (id > 0) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception("No se pudo completar el registro. Intente de nuevo."))
+        }
+    }
+
     override suspend fun obtenerUsuarioPorId(id: Int): Usuario? {
         return usuarioDao.obtenerPorId(id)
     }
