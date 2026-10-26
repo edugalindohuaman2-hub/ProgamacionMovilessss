@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -19,8 +21,8 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.DesktopWindows
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Print
@@ -38,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -65,6 +68,7 @@ fun NuevoTicketScreen(
     val categoriaSeleccionada by viewModel.categoriaSeleccionada.collectAsState()
     val titulo by viewModel.titulo.collectAsState()
     val ubicacion by viewModel.ubicacion.collectAsState()
+    val sugerenciasUbicacion by viewModel.sugerenciasUbicacion.collectAsState()
     val prioridad by viewModel.prioridad.collectAsState()
     val descripcion by viewModel.descripcion.collectAsState()
 
@@ -218,7 +222,7 @@ fun NuevoTicketScreen(
                 }
             }
 
-            // 3. Campo Ubicación
+            // 3. Campo Ubicación con Sugerencias de Autocompletado (LazyRow + SuggestionChip)
             Column {
                 AyudaTextField(
                     value = ubicacion,
@@ -234,6 +238,21 @@ fun NuevoTicketScreen(
                     },
                     isError = errorUbicacion != null
                 )
+
+                if (recibirTickets && sugerenciasUbicacion.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(sugerenciasUbicacion) { sugerencia ->
+                            SuggestionChip(
+                                onClick = { viewModel.seleccionarSugerenciaUbicacion(sugerencia) },
+                                label = { Text(text = sugerencia) }
+                            )
+                        }
+                    }
+                }
 
                 errorUbicacion?.let { msg ->
                     Spacer(modifier = Modifier.height(4.dp))

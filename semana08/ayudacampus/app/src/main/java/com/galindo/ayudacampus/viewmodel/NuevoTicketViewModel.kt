@@ -17,6 +17,39 @@ class NuevoTicketViewModel(
     private val clienteId: Int
 ) : ViewModel() {
 
+    // Opciones precargadas por categoría
+    private val laboratorios = listOf(
+        "Lab 1 - Pabellón A",
+        "Lab 2 - Pabellón A",
+        "Lab 3 - Pabellón B",
+        "Lab 4 - Pabellón B",
+        "Lab 5 - Pabellón C"
+    )
+
+    private val aulas = listOf(
+        "Aula 101 - Pabellón A",
+        "Aula 102 - Pabellón A",
+        "Aula 201 - Pabellón B",
+        "Aula 202 - Pabellón B",
+        "Aula 305 - Pabellón C"
+    )
+
+    private val pabellones = listOf(
+        "Pabellón A - Piso 1",
+        "Pabellón A - Piso 2",
+        "Pabellón B - Piso 1",
+        "Pabellón B - Piso 2",
+        "Pabellón C - Piso 3"
+    )
+
+    private val opcionesGenerales = listOf(
+        "Lab 1 - Pabellón A",
+        "Lab 2 - Pabellón A",
+        "Aula 101 - Pabellón A",
+        "Aula 201 - Pabellón B",
+        "Pabellón A - Piso 1"
+    )
+
     // Categorías activas desde el repositorio
     val categoriasActivas: StateFlow<List<Categoria>> = repository.observarCategoriasActivas()
         .stateIn(
@@ -34,6 +67,9 @@ class NuevoTicketViewModel(
 
     private val _ubicacion = MutableStateFlow("")
     val ubicacion: StateFlow<String> = _ubicacion.asStateFlow()
+
+    private val _sugerenciasUbicacion = MutableStateFlow<List<String>>(opcionesGenerales)
+    val sugerenciasUbicacion: StateFlow<List<String>> = _sugerenciasUbicacion.asStateFlow()
 
     private val _prioridad = MutableStateFlow(Prioridad.MEDIA)
     val prioridad: StateFlow<Prioridad> = _prioridad.asStateFlow()
@@ -70,6 +106,24 @@ class NuevoTicketViewModel(
     fun onUbicacionCambiada(nuevaUbicacion: String) {
         _ubicacion.value = nuevaUbicacion
         _errorUbicacion.value = null
+
+        val query = nuevaUbicacion.trim().lowercase()
+            .replace("ó", "o")
+            .replace("á", "a")
+            .replace("é", "e")
+            .replace("í", "i")
+            .replace("ú", "u")
+
+        _sugerenciasUbicacion.value = when {
+            query.contains("lab") -> laboratorios
+            query.contains("aula") -> aulas
+            query.contains("pabellon") -> pabellones
+            else -> opcionesGenerales
+        }
+    }
+
+    fun seleccionarSugerenciaUbicacion(sugerencia: String) {
+        onUbicacionCambiada(sugerencia)
     }
 
     fun onPrioridadCambiada(nuevaPrioridad: Prioridad) {
