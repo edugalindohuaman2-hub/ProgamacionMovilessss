@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.Flow
 interface AyudaRepository {
     suspend fun login(correo: String, clave: String): Usuario?
 
+    suspend fun registrarEstudiante(nombre: String, correo: String, clave: String): Result<Unit>
+
     suspend fun obtenerUsuarioPorId(id: Int): Usuario?
 
     suspend fun obtenerUsuarioPorRol(rol: String): Usuario?

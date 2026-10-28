@@ -56,6 +56,7 @@ import com.galindo.ayudacampus.viewmodel.TicketDetalleViewModel
 object Rutas {
     const val SPLASH = "splash"
     const val LOGIN = "login"
+    const val REGISTRO = "registro"
     const val MIS_TICKETS = "mis_tickets"
     const val NUEVO_TICKET = "nuevo_ticket"
     const val PERFIL = "perfil"
@@ -182,6 +183,25 @@ fun NavAyuda(
                         navController.navigate(destination) {
                             popUpTo(Rutas.LOGIN) { inclusive = true }
                         }
+                    },
+                    onIrARegistro = {
+                        navController.navigate(Rutas.REGISTRO)
+                    }
+                )
+            }
+
+            composable(Rutas.REGISTRO) {
+                val registroViewModel: com.galindo.ayudacampus.viewmodel.RegistroViewModel = viewModel(
+                    factory = app.registroViewModelFactory
+                )
+
+                com.galindo.ayudacampus.ui.cliente.RegistroScreen(
+                    viewModel = registroViewModel,
+                    onRegistroExitoso = {
+                        navController.popBackStack()
+                    },
+                    onVolver = {
+                        navController.popBackStack()
                     }
                 )
             }

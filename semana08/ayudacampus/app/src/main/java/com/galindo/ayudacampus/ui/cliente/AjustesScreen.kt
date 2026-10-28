@@ -1,6 +1,9 @@
 package com.galindo.ayudacampus.ui.cliente
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,16 +14,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -36,11 +44,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.galindo.ayudacampus.data.model.Rol
 import com.galindo.ayudacampus.viewmodel.SesionViewModel
+
+// Color primario del perfil Soporte TI: Violeta #7C3AED
+private val ColorVioletaSoporte = Color(0xFF7C3AED)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +62,7 @@ fun AjustesScreen(
     onCerrarSesion: () -> Unit = {},
     onCambiarPerfil: (Rol) -> Unit = {}
 ) {
+    val usuario by viewModel.usuarioActual.collectAsState()
     val modoOscuro by viewModel.modoOscuro.collectAsState()
     val notificaciones by viewModel.notificaciones.collectAsState()
     val recibirTickets by viewModel.recibirTickets.collectAsState()
@@ -60,7 +73,7 @@ fun AjustesScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Ajustes y Configuración",
+                        text = "Ajustes de Soporte TI",
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -75,7 +88,110 @@ fun AjustesScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Apariencia: Modo Oscuro
+            // 1. Cabecera: Tarjeta con Avatar, Nombre, Correo y Chip
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                            .background(ColorVioletaSoporte.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.SupportAgent,
+                            contentDescription = "Avatar Soporte",
+                            tint = ColorVioletaSoporte,
+                            modifier = Modifier.size(36.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = usuario?.nombre ?: "Soporte TI",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = usuario?.correo ?: "soporte@campus.test",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        AssistChip(
+                            onClick = { },
+                            label = { Text("Perfil activo") },
+                            colors = AssistChipDefaults.assistChipColors(
+                                containerColor = ColorVioletaSoporte.copy(alpha = 0.12f),
+                                labelColor = ColorVioletaSoporte
+                            )
+                        )
+                    }
+                }
+            }
+
+            // 2. Tarjeta interactiva "Cambiar de perfil"
+            Card(
+                onClick = {
+                    viewModel.cambiarPerfilPractica { nuevoRol ->
+                        onCambiarPerfil(nuevoRol)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = ColorVioletaSoporte
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SwapHoriz,
+                        contentDescription = "Cambiar de perfil",
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Cambiar de perfil",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Modo práctica: ir a vista Estudiante",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "Ir",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
+            // 3. Sección "Preferencias"
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -87,126 +203,106 @@ fun AjustesScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "Preferencia de Apariencia",
+                        text = "Preferencias",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = ColorVioletaSoporte
                     )
 
+                    // Switch Modo Oscuro
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.DarkMode,
                                 contentDescription = "Modo oscuro",
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = ColorVioletaSoporte,
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Modo Oscuro",
+                                    text = "Modo oscuro",
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = "Cambiar el tema de la aplicación",
+                                    text = "Cambia el tema de la app",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.outline
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
 
                         Switch(
                             checked = modoOscuro,
-                            onCheckedChange = { viewModel.toggleModoOscuro(it) }
+                            onCheckedChange = { viewModel.toggleModoOscuro(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = ColorVioletaSoporte
+                            )
                         )
                     }
-                }
-            }
 
-            // Notificaciones
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "Notificaciones",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
+                    // Switch Notificaciones
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = "Notificaciones",
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = ColorVioletaSoporte,
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Alertas de Tickets",
+                                    text = "Notificaciones",
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = "Recibir avisos de nuevas respuestas",
+                                    text = "Avisar tickets nuevos",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.outline
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
 
                         Switch(
                             checked = notificaciones,
-                            onCheckedChange = { viewModel.toggleNotificaciones(it) }
+                            onCheckedChange = { viewModel.toggleNotificaciones(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = ColorVioletaSoporte
+                            )
                         )
                     }
-                }
-            }
 
-            // Atención de solicitudes: Recibir tickets
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "Atención de Mesa de Ayuda",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
+                    // Switch Recibir Tickets
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.ConfirmationNumber,
                                 contentDescription = "Recibir tickets",
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = ColorVioletaSoporte,
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -216,48 +312,48 @@ fun AjustesScreen(
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = if (recibirTickets) "Mesa de ayuda abierta a los estudiantes" else "Mesa de ayuda cerrada (no se reciben tickets)",
+                                    text = "Abrir o cerrar la mesa de ayuda",
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = if (recibirTickets) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.error
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
 
                         Switch(
                             checked = recibirTickets,
-                            onCheckedChange = { viewModel.toggleRecibirTickets(it) }
+                            onCheckedChange = { viewModel.toggleRecibirTickets(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = ColorVioletaSoporte
+                            )
+                        )
+                    }
+
+                    // Mensaje Informativo DataStore
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "DataStore Info",
+                            tint = MaterialTheme.colorScheme.outline,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Se guardan en el dispositivo con DataStore",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.outline
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Botón "Cambiar de perfil" (Modo práctica)
+            // 4. Botón Inferior "Cerrar sesión" con borde rojo
             OutlinedButton(
-                onClick = {
-                    viewModel.cambiarPerfilPractica { nuevoRol ->
-                        onCambiarPerfil(nuevoRol)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.SwapHoriz,
-                    contentDescription = "Cambiar de perfil"
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Cambiar a Estudiante (Modo práctica)",
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            // Botón "Cerrar sesión"
-            Button(
                 onClick = {
                     viewModel.cerrarSesion {
                         onCerrarSesion()
@@ -265,16 +361,21 @@ fun AjustesScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
-                shape = RoundedCornerShape(8.dp)
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, Color(0xFFD32F2F))
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                    contentDescription = "Cerrar sesión"
+                    contentDescription = "Cerrar sesión",
+                    tint = Color(0xFFD32F2F)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Cerrar Sesión", fontWeight = FontWeight.Bold)
+                Text(
+                    text = "Cerrar sesión",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFD32F2F)
+                )
             }
         }
     }

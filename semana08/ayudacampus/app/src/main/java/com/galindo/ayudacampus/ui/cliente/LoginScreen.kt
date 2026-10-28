@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,6 +54,7 @@ import com.galindo.ayudacampus.viewmodel.SesionViewModel
 fun LoginScreen(
     viewModel: SesionViewModel,
     onLoginSuccess: (Rol) -> Unit,
+    onIrARegistro: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var rolSeleccionado by remember { mutableStateOf(Rol.CLIENTE) }
@@ -267,6 +269,23 @@ fun LoginScreen(
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
+                        }
+
+                        // Opción de Registro de Estudiante
+                        if (rolSeleccionado == Rol.CLIENTE) {
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            TextButton(
+                                onClick = onIrARegistro,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "¿No tienes cuenta? Regístrate",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 }

@@ -54,7 +54,7 @@ interface TicketDao {
     @Query("SELECT c.nombre AS categoriaNombre, COUNT(t.id) AS total FROM categorias c LEFT JOIN tickets t ON c.id = t.categoriaId GROUP BY c.id, c.nombre")
     fun contarPorCategoria(): Flow<List<ConteoCategoria>>
 
-    @Query("SELECT COUNT(*) FROM tickets WHERE prioridad = 'ALTA' AND estado = 'ABIERTO' AND fecha < :limite")
+    @Query("SELECT COUNT(*) FROM tickets WHERE prioridad = 'ALTA' AND (estado = 'ABIERTO' OR estado = 'PENDIENTE') AND fecha < :limite")
     fun contarAltasSinAtender(limite: Long): Flow<Int>
 
     @Query("SELECT COUNT(*) FROM tickets WHERE categoriaId = :categoriaId")

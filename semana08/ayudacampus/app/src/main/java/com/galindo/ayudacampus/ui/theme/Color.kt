@@ -2,6 +2,10 @@ package com.galindo.ayudacampus.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+// Colores requeridos por la guía de diseño AyudaCampus (Laboratorio 08)
+val CyanPrimary = Color(0xFF0891B2)      // Estudiante (CLIENTE)
+val VioletPrimary = Color(0xFF7C3AED)    // Soporte TI (ADMIN)
+
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)
